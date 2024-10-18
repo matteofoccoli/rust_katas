@@ -1,34 +1,39 @@
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::PathBuf;
 
 pub fn main() {}
 
 struct PeopleRegistry {
-    file: String,
+    file_path: PathBuf,
 }
 
 impl PeopleRegistry {
-    fn new(file: String) -> Self {
-        Self { file }
+    fn new(file_path: PathBuf) -> Self {
+        Self { file_path }
     }
 
-    fn read(&self) -> Vec<Person> {
+    fn read(&self) -> Result<Vec<Person>, String> {
         let mut result: Vec<Person> = Vec::new();
-        let mut file = File::open(self.file.clone()).expect("Error opening file");
+        let mut file = File::open(self.file_path.clone()).map_err(|e| e.to_string())?;
         let mut file_content = String::new();
-        file.read_to_string(&mut file_content)
-            .expect("Error reading file content");
+        if let Err(e) = file.read_to_string(&mut file_content) {
+            return Err(e.to_string());
+        }
         for line in file_content.lines() {
-            println!(">>>>> {line}");
-            let parts: Vec<&str> = line.split(';').collect();
-            result.push(Person {
-                name: parts[0].to_string(),
-                genre: parts[1].try_into().expect("Invalid genre"),
-                age: parts[2].parse().expect("Invalid age"),
-            })
+            result.push(Self::parse_line(line))
         }
 
-        return result;
+        return Ok(result);
+    }
+
+    fn parse_line(line: &str) -> Person {
+        let parts: Vec<&str> = line.split(';').collect();
+        Person {
+            name: parts[0].to_string(),
+            genre: parts[1].try_into().expect("Invalid genre"),
+            age: parts[2].parse().expect("Invalid age"),
+        }
     }
 }
 
@@ -62,10 +67,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn reads_one_person_from_a_file() {
-        let registry = PeopleRegistry::new("person.txt".to_string());
+    fn handles_not_existing_file() {
+        let registry = PeopleRegistry::new(PathBuf::from("./not_existing.txt".to_string()));
 
-        let people = registry.read();
+        let result = registry.read();
+
+        assert!(result.is_err())
+    }
+
+    #[test]
+    fn reads_one_person_from_a_file() {
+        let registry = PeopleRegistry::new(PathBuf::from("./person.txt".to_string()));
+
+        let people = registry
+            .read()
+            .expect("Unexpected error reading file in tests");
 
         assert_eq!(1, people.len());
         assert_eq!(
@@ -80,9 +96,11 @@ mod tests {
 
     #[test]
     fn reads_two_people_from_a_file() {
-        let registry = PeopleRegistry::new("people.txt".to_string());
+        let registry = PeopleRegistry::new(PathBuf::from("./people.txt".to_string()));
 
-        let people = registry.read();
+        let people = registry
+            .read()
+            .expect("Unexpected error reading file in tests");
 
         assert_eq!(2, people.len());
         assert_eq!(
