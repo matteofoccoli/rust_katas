@@ -6,23 +6,42 @@ pub fn main() {}
 
 struct PeopleRegistry {
     file_path: PathBuf,
+    errors: Vec<Error>,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+struct Error {
+    line_number: usize,
+    message: String
 }
 
 impl PeopleRegistry {
     fn new(file_path: PathBuf) -> Self {
-        Self { file_path }
+        Self { 
+            file_path,
+            errors: vec!()
+        }
     }
 
-    fn read(&self) -> Result<Vec<Person>, String> {
+    fn errors(&self) -> Vec<Error> {
+        self.errors.clone()
+    }
+
+    fn read(&mut self) -> Result<Vec<Person>, String> {
+        self.errors = vec!();
         let mut result: Vec<Person> = Vec::new();
         let mut file = File::open(self.file_path.clone()).map_err(|e| e.to_string())?;
         let mut file_content = String::new();
         if let Err(e) = file.read_to_string(&mut file_content) {
             return Err(e.to_string());
         }
-        for line in file_content.lines() {
-            if let Ok(line) = Self::parse_line(line) {
-                result.push(line);
+        for (line_index, line_content) in file_content.lines().enumerate() {
+            match Self::parse_line(line_content) {
+                Ok(person) => result.push(person),
+                Err(e) => self.errors.push(Error {
+                    line_number: line_index + 1,
+                    message: e.to_string()
+                })
             }
         }
 
@@ -33,7 +52,7 @@ impl PeopleRegistry {
         let parts: Vec<&str> = line.split(';').collect();
         let name = parts[0].to_string();
         let genre = parts[1].try_into()?;
-        let age = parts[2].parse().map_err(|_| "Error parsing age")?;
+        let age = parts[2].parse().map_err(|_| "Invalid age")?;
         Ok(Person { name, genre, age })
     }
 }
@@ -58,7 +77,7 @@ impl TryFrom<&str> for Genre {
         match value {
             "m" => Ok(Genre::Man),
             "w" => Ok(Genre::Woman),
-            _ => Err("Invalid value for genre"),
+            _ => Err("Invalid genre"),
         }
     }
 }
@@ -69,7 +88,7 @@ mod tests {
 
     #[test]
     fn handles_not_existing_file() {
-        let registry = PeopleRegistry::new(PathBuf::from("./not_existing.txt"));
+        let mut registry = PeopleRegistry::new(PathBuf::from("./not_existing.txt"));
 
         let result = registry.read();
 
@@ -78,7 +97,7 @@ mod tests {
 
     #[test]
     fn reads_one_person_from_a_file() {
-        let registry = PeopleRegistry::new(PathBuf::from("./person.txt"));
+        let mut registry = PeopleRegistry::new(PathBuf::from("./person.txt"));
 
         let people = registry
             .read()
@@ -97,7 +116,7 @@ mod tests {
 
     #[test]
     fn reads_two_people_from_a_file() {
-        let registry = PeopleRegistry::new(PathBuf::from("./people.txt"));
+        let mut registry = PeopleRegistry::new(PathBuf::from("./people.txt"));
 
         let people = registry
             .read()
@@ -124,7 +143,7 @@ mod tests {
 
     #[test]
     fn skips_lines_with_errors() {
-        let registry = PeopleRegistry::new(PathBuf::from("./with_errors.txt"));
+        let mut registry = PeopleRegistry::new(PathBuf::from("./with_errors.txt"));
 
         let people = registry
             .read()
@@ -139,5 +158,27 @@ mod tests {
             }),
             people.get(0)
         );
+    }
+
+    #[test]
+    fn gets_errors() {
+        let mut registry = PeopleRegistry::new(PathBuf::from("./with_errors.txt"));
+
+        let _ = registry.read().expect("Unexpected error reading file in tests");
+        let errors = registry.errors();
+
+        assert_eq!(2, errors.len());
+        assert_eq!(Error { line_number: 1, message: "Invalid genre".to_string() }, errors[0]);
+        assert_eq!(Error { line_number: 3, message: "Invalid age".to_string() }, errors[1]);
+    }
+
+    #[test]
+    fn reinitialize_errors_when_reading_a_new_file() {
+        let mut registry = PeopleRegistry::new(PathBuf::from("./with_errors.txt"));
+
+        let _ = registry.read().expect("Unexpected error reading file in tests");
+        let _ = registry.read().expect("Unexpected error reading file in tests");
+
+        assert_eq!(2, registry.errors.len())
     }
 }
