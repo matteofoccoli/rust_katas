@@ -106,6 +106,8 @@ mod tests {
 
     use super::*;
 
+    const UNEXPECTED_ERROR_READING_FILE_IN_TESTS: &str = "Unexpected error reading file in tests";
+
     #[test]
     fn handles_not_existing_file() {
         let mut registry = PeopleRegistry::new();
@@ -121,7 +123,7 @@ mod tests {
 
         let people = registry
             .read(PathBuf::from("./person.txt"))
-            .expect("Unexpected error reading file in tests");
+            .expect(UNEXPECTED_ERROR_READING_FILE_IN_TESTS);
 
         assert_eq!(1, people.len());
         assert_eq!(
@@ -140,7 +142,7 @@ mod tests {
 
         let people = registry
             .read(PathBuf::from("./people.txt"))
-            .expect("Unexpected error reading file in tests");
+            .expect(UNEXPECTED_ERROR_READING_FILE_IN_TESTS);
 
         assert_eq!(2, people.len());
         assert_eq!(
@@ -167,7 +169,7 @@ mod tests {
 
         let people = registry
             .read(PathBuf::from("./with_errors.txt"))
-            .expect("Unexpected error reading file in tests");
+            .expect(UNEXPECTED_ERROR_READING_FILE_IN_TESTS);
 
         assert_eq!(1, people.len());
         assert_eq!(
@@ -186,7 +188,7 @@ mod tests {
 
         let _ = registry
             .read(PathBuf::from("./with_errors.txt"))
-            .expect("Unexpected error reading file in tests");
+            .expect(UNEXPECTED_ERROR_READING_FILE_IN_TESTS);
         let errors = registry.errors();
 
         assert_eq!(3, errors.len());
@@ -220,10 +222,10 @@ mod tests {
         let file_path = "./with_errors.txt";
         let _ = registry
             .read(PathBuf::from(file_path))
-            .expect("Unexpected error reading file in tests");
+            .expect(UNEXPECTED_ERROR_READING_FILE_IN_TESTS);
         let _ = registry
             .read(PathBuf::from(file_path))
-            .expect("Unexpected error reading file in tests");
+            .expect(UNEXPECTED_ERROR_READING_FILE_IN_TESTS);
 
         assert_eq!(3, registry.errors.len())
     }
@@ -243,12 +245,12 @@ mod tests {
                 age: 23,
             }
         ];
-        let file_path = &format!("{}people_repository_kata_{}.txt", env::temp_dir().display(), current_timestamp());
+        let file_path = &temp_file_path();
 
         let write_result = registry.write(people, PathBuf::from(file_path));
 
         assert!(write_result.is_ok());
-        let read_result = registry.read(PathBuf::from(file_path)).expect("Unexpected error reading file in tests");
+        let read_result = registry.read(PathBuf::from(file_path)).expect(UNEXPECTED_ERROR_READING_FILE_IN_TESTS);
         assert_eq!(2, read_result.len());
         assert_eq!(Person {name: "John".to_string(), genre: Genre::Man, age: 12}, read_result[0]);
         assert_eq!(Person {name: "Mary".to_string(), genre: Genre::Woman, age: 23}, read_result[1])
@@ -257,7 +259,7 @@ mod tests {
     #[test]
     fn writes_fails_if_parent_dir_does_not_exist() {
         let registry = PeopleRegistry::new();
-        let not_existing_file_path = &format!("./{}/people.txt", current_timestamp());
+        let not_existing_file_path = &not_existing_file_path();
 
         let result = registry.write(vec!(), PathBuf::from(not_existing_file_path));
 
@@ -267,6 +269,14 @@ mod tests {
 
     fn current_timestamp() -> u32 {
         SystemTime::now().duration_since(UNIX_EPOCH).unwrap().subsec_nanos()
+    }
+
+    fn temp_file_path() -> String {
+        format!("{}people_repository_kata_{}.txt", env::temp_dir().display(), current_timestamp())
+    }
+
+    fn not_existing_file_path() -> String {
+        format!("./{}/people.txt", current_timestamp())
     }
     
 }
