@@ -21,19 +21,20 @@ impl PeopleRegistry {
             return Err(e.to_string());
         }
         for line in file_content.lines() {
-            result.push(Self::parse_line(line))
+            if let Ok(line) = Self::parse_line(line) {
+                result.push(line);
+            }
         }
 
         return Ok(result);
     }
 
-    fn parse_line(line: &str) -> Person {
+    fn parse_line(line: &str) -> Result<Person, String> {
         let parts: Vec<&str> = line.split(';').collect();
-        Person {
-            name: parts[0].to_string(),
-            genre: parts[1].try_into().expect("Invalid genre"),
-            age: parts[2].parse().expect("Invalid age"),
-        }
+        let name = parts[0].to_string();
+        let genre = parts[1].try_into()?;
+        let age = parts[2].parse().map_err(|_| "Error parsing age")?;
+        Ok(Person { name, genre, age })
     }
 }
 
@@ -68,7 +69,7 @@ mod tests {
 
     #[test]
     fn handles_not_existing_file() {
-        let registry = PeopleRegistry::new(PathBuf::from("./not_existing.txt".to_string()));
+        let registry = PeopleRegistry::new(PathBuf::from("./not_existing.txt"));
 
         let result = registry.read();
 
@@ -77,7 +78,7 @@ mod tests {
 
     #[test]
     fn reads_one_person_from_a_file() {
-        let registry = PeopleRegistry::new(PathBuf::from("./person.txt".to_string()));
+        let registry = PeopleRegistry::new(PathBuf::from("./person.txt"));
 
         let people = registry
             .read()
@@ -96,7 +97,7 @@ mod tests {
 
     #[test]
     fn reads_two_people_from_a_file() {
-        let registry = PeopleRegistry::new(PathBuf::from("./people.txt".to_string()));
+        let registry = PeopleRegistry::new(PathBuf::from("./people.txt"));
 
         let people = registry
             .read()
@@ -118,6 +119,25 @@ mod tests {
                 age: 33
             }),
             people.get(1)
+        );
+    }
+
+    #[test]
+    fn skips_lines_with_errors() {
+        let registry = PeopleRegistry::new(PathBuf::from("./with_errors.txt"));
+
+        let people = registry
+            .read()
+            .expect("Unexpected error reading file in tests");
+
+        assert_eq!(1, people.len());
+        assert_eq!(
+            Some(&Person {
+                name: "Melissa".to_string(),
+                genre: Genre::Woman,
+                age: 33
+            }),
+            people.get(0)
         );
     }
 }

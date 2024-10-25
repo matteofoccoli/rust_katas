@@ -1,4 +1,5 @@
 [x] return result from read
 [x] handle not existing file
-[] handle parsing errors in not_valid.txt
-[] use filepath instead of strings
+[x] use filepath instead of strings
+[] skip lines with errors
+[] returns lines with errors (line number and errors on that line)
