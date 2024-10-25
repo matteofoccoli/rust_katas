@@ -23,8 +23,8 @@ impl PeopleRegistry {
         }
     }
 
-    fn errors(&self) -> Vec<Error> {
-        self.errors.clone()
+    fn errors(&self) -> &Vec<Error> {
+        &self.errors
     }
 
     fn read(&mut self) -> Result<Vec<Person>, String> {
