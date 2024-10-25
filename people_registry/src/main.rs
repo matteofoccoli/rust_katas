@@ -50,6 +50,9 @@ impl PeopleRegistry {
 
     fn parse_line(line: &str) -> Result<Person, String> {
         let parts: Vec<&str> = line.split(';').collect();
+        if parts.len() < 3 {
+            return Err("Invalid line".to_string());
+        }
         let name = parts[0].to_string();
         let genre = parts[1].try_into()?;
         let age = parts[2].parse().map_err(|_| "Invalid age")?;
@@ -167,9 +170,10 @@ mod tests {
         let _ = registry.read().expect("Unexpected error reading file in tests");
         let errors = registry.errors();
 
-        assert_eq!(2, errors.len());
+        assert_eq!(3, errors.len());
         assert_eq!(Error { line_number: 1, message: "Invalid genre".to_string() }, errors[0]);
         assert_eq!(Error { line_number: 3, message: "Invalid age".to_string() }, errors[1]);
+        assert_eq!(Error { line_number: 4, message: "Invalid line".to_string() }, errors[2]);
     }
 
     #[test]
@@ -179,6 +183,6 @@ mod tests {
         let _ = registry.read().expect("Unexpected error reading file in tests");
         let _ = registry.read().expect("Unexpected error reading file in tests");
 
-        assert_eq!(2, registry.errors.len())
+        assert_eq!(3, registry.errors.len())
     }
 }
