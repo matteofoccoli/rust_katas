@@ -108,12 +108,12 @@ mod tests {
 
         assert_eq!(1, people.len());
         assert_eq!(
-            Some(&Person {
+            Person {
                 name: "Gigi".to_string(),
                 genre: Genre::Man,
                 age: 11
-            }),
-            people.get(0)
+            },
+            people[0]
         )
     }
 
@@ -127,20 +127,20 @@ mod tests {
 
         assert_eq!(2, people.len());
         assert_eq!(
-            Some(&Person {
+            Person {
                 name: "Matteo".to_string(),
                 genre: Genre::Man,
                 age: 22
-            }),
-            people.get(0)
+            },
+            people[0]
         );
         assert_eq!(
-            Some(&Person {
+            Person {
                 name: "Melissa".to_string(),
                 genre: Genre::Woman,
                 age: 33
-            }),
-            people.get(1)
+            },
+            people[1]
         );
     }
 
@@ -154,12 +154,12 @@ mod tests {
 
         assert_eq!(1, people.len());
         assert_eq!(
-            Some(&Person {
+            Person {
                 name: "Melissa".to_string(),
                 genre: Genre::Woman,
                 age: 33
-            }),
-            people.get(0)
+            },
+            people[0]
         );
     }
 
