@@ -4,9 +4,11 @@ fn main() {
 
 trait Cupcake {
     fn print(&self) -> String;
+
+    fn is_topping(&self) -> bool;
 }
 
-trait Topping {
+trait CupcakeWithTopping {
     fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake;
 }
 
@@ -18,6 +20,10 @@ impl Cupcake for PlainCupcake {
     fn print(&self) -> String {
         "🧁".to_string()
     }
+    
+    fn is_topping(&self) -> bool {
+        false
+    }
 }
 
 struct ChocolateCupcake {
@@ -26,11 +32,15 @@ struct ChocolateCupcake {
 
 impl Cupcake for ChocolateCupcake {
     fn print(&self) -> String {
-        return format!("{} with 🍫", self.cupcake.print())
+        format!("{} with 🍫", self.cupcake.print())
+    }
+    
+    fn is_topping(&self) -> bool {
+        true
     }
 }
 
-impl Topping for ChocolateCupcake {
+impl CupcakeWithTopping for ChocolateCupcake {
     fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake {
         ChocolateCupcake {
             cupcake
@@ -38,7 +48,31 @@ impl Topping for ChocolateCupcake {
     }
 }
 
+struct NutsCupcake {
+    cupcake: Box<dyn Cupcake>
+}
 
+impl Cupcake for NutsCupcake {
+    fn print(&self) -> String {
+        if self.cupcake.is_topping() {
+            format!("{} and 🥜", self.cupcake.print())
+        } else {
+            format!("{} with 🥜", self.cupcake.print())
+        }
+    }
+    
+    fn is_topping(&self) -> bool {
+        true
+    }
+}
+
+impl CupcakeWithTopping for NutsCupcake {
+    fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake {
+        NutsCupcake {
+            cupcake
+        }
+    }
+}
 #[cfg(test)]
 mod test {
 
@@ -48,17 +82,20 @@ mod test {
     fn creates_a_plain_cupcake() {
         let cupcake = PlainCupcake {};
 
-        let result = cupcake.print();
-
-        assert_eq!("🧁", result);
+        assert_eq!("🧁", cupcake.print());
     }
 
     #[test]
     fn puts_some_chocolate_on_top() {
         let cupcake = ChocolateCupcake::new(Box::new(PlainCupcake {}));
 
-        let result = cupcake.print();
+        assert_eq!("🧁 with 🍫", cupcake.print());
+    }
 
-        assert_eq!("🧁 with 🍫", result);
+    #[test]
+    fn puts_chocolate_an_nuts_on_top() {
+        let cupcake = NutsCupcake::new(Box::new(ChocolateCupcake::new(Box::new(PlainCupcake {}))));
+
+        assert_eq!("🧁 with 🍫 and 🥜", cupcake.print());
     }
 }
