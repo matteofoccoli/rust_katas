@@ -8,19 +8,23 @@ trait Cupcake {
     fn has_topping(&self) -> bool;
 }
 
-trait CupcakeWithTopping {
+trait CupcakeDecorator {
     fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake;
 }
 
-struct PlainCupcake {
+struct PlainCupcake {}
 
+impl PlainCupcake {
+    fn new() -> Self {
+        Self {}
+    }
 }
 
 impl Cupcake for PlainCupcake {
     fn description(&self) -> String {
         "🧁".to_string()
     }
-    
+
     fn has_topping(&self) -> bool {
         false
     }
@@ -34,27 +38,24 @@ impl Cupcake for ChocolateCupcake {
     fn description(&self) -> String {
         if self.cupcake.has_topping() {
             format!("{} and 🍫", self.cupcake.description())
-        }
-        else {
+        } else {
             format!("{} with 🍫", self.cupcake.description())
         }
     }
-    
+
     fn has_topping(&self) -> bool {
         true
     }
 }
 
-impl CupcakeWithTopping for ChocolateCupcake {
+impl CupcakeDecorator for ChocolateCupcake {
     fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake {
-        ChocolateCupcake {
-            cupcake
-        }
+        ChocolateCupcake { cupcake }
     }
 }
 
 struct NutsCupcake {
-    cupcake: Box<dyn Cupcake>
+    cupcake: Box<dyn Cupcake>,
 }
 
 impl Cupcake for NutsCupcake {
@@ -65,19 +66,42 @@ impl Cupcake for NutsCupcake {
             format!("{} with 🥜", self.cupcake.description())
         }
     }
-    
+
     fn has_topping(&self) -> bool {
         true
     }
 }
 
-impl CupcakeWithTopping for NutsCupcake {
+impl CupcakeDecorator for NutsCupcake {
     fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake {
-        NutsCupcake {
-            cupcake
-        }
+        NutsCupcake { cupcake }
     }
 }
+
+struct CandiesCupcake {
+    cupcake: Box<dyn Cupcake>,
+}
+
+impl Cupcake for CandiesCupcake {
+    fn description(&self) -> String {
+        if self.cupcake.has_topping() {
+            format!("{} and 🍬", self.cupcake.description())
+        } else {
+            format!("{} with 🍬", self.cupcake.description())
+        }
+    }
+
+    fn has_topping(&self) -> bool {
+        true
+    }
+}
+
+impl CupcakeDecorator for CandiesCupcake {
+    fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake {
+        CandiesCupcake { cupcake }
+    }
+}
+
 #[cfg(test)]
 mod test {
 
@@ -85,36 +109,48 @@ mod test {
 
     #[test]
     fn creates_a_plain_cupcake() {
-        let cupcake = PlainCupcake {};
+        let cupcake = PlainCupcake::new();
 
         assert_eq!("🧁", cupcake.description());
     }
 
     #[test]
-    fn has_chocolate_on_top() {
-        let cupcake = ChocolateCupcake::new(Box::new(PlainCupcake {}));
+    fn has_chocolate() {
+        let cupcake = ChocolateCupcake::new(Box::new(PlainCupcake::new()));
 
         assert_eq!("🧁 with 🍫", cupcake.description());
     }
 
     #[test]
-    fn has_nuts_on_top() {
-        let cupcake = NutsCupcake::new(Box::new(PlainCupcake {}));
+    fn has_nuts() {
+        let cupcake = NutsCupcake::new(Box::new(PlainCupcake::new()));
 
         assert_eq!("🧁 with 🥜", cupcake.description());
     }
 
     #[test]
-    fn has_chocolate_an_nuts_on_top() {
-        let cupcake = NutsCupcake::new(Box::new(ChocolateCupcake::new(Box::new(PlainCupcake {}))));
+    fn has_chocolate_an_nuts() {
+        let cupcake = NutsCupcake::new(Box::new(ChocolateCupcake::new(Box::new(
+            PlainCupcake::new(),
+        ))));
 
         assert_eq!("🧁 with 🍫 and 🥜", cupcake.description());
     }
 
     #[test]
-    fn has_nuts_and_chocolate_on_top() {
-        let cupcake = ChocolateCupcake::new(Box::new(NutsCupcake::new(Box::new(PlainCupcake {}))));
+    fn has_nuts_and_chocolate() {
+        let cupcake =
+            ChocolateCupcake::new(Box::new(NutsCupcake::new(Box::new(PlainCupcake::new()))));
 
         assert_eq!("🧁 with 🥜 and 🍫", cupcake.description());
+    }
+
+    #[test]
+    fn has_nuts_chocolate_and_candies() {
+        let cupcake = CandiesCupcake::new(Box::new(ChocolateCupcake::new(Box::new(
+            NutsCupcake::new(Box::new(PlainCupcake::new())),
+        ))));
+
+        assert_eq!("🧁 with 🥜 and 🍫 and 🍬", cupcake.description());
     }
 }
