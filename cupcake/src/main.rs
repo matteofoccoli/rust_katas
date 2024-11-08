@@ -5,7 +5,7 @@ fn main() {
 trait Cupcake {
     fn description(&self) -> String;
 
-    fn is_topping(&self) -> bool;
+    fn has_topping(&self) -> bool;
 }
 
 trait CupcakeWithTopping {
@@ -21,7 +21,7 @@ impl Cupcake for PlainCupcake {
         "🧁".to_string()
     }
     
-    fn is_topping(&self) -> bool {
+    fn has_topping(&self) -> bool {
         false
     }
 }
@@ -32,7 +32,7 @@ struct ChocolateCupcake {
 
 impl Cupcake for ChocolateCupcake {
     fn description(&self) -> String {
-        if self.cupcake.is_topping() {
+        if self.cupcake.has_topping() {
             format!("{} and 🍫", self.cupcake.description())
         }
         else {
@@ -40,7 +40,7 @@ impl Cupcake for ChocolateCupcake {
         }
     }
     
-    fn is_topping(&self) -> bool {
+    fn has_topping(&self) -> bool {
         true
     }
 }
@@ -59,14 +59,14 @@ struct NutsCupcake {
 
 impl Cupcake for NutsCupcake {
     fn description(&self) -> String {
-        if self.cupcake.is_topping() {
+        if self.cupcake.has_topping() {
             format!("{} and 🥜", self.cupcake.description())
         } else {
             format!("{} with 🥜", self.cupcake.description())
         }
     }
     
-    fn is_topping(&self) -> bool {
+    fn has_topping(&self) -> bool {
         true
     }
 }
