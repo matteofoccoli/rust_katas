@@ -135,6 +135,12 @@ impl Bundle {
         self.cupcakes.push(cupcake);
     }
 
+    fn add_bundle(&mut self, bundle: Bundle) {
+        for cupcake in bundle.cupcakes {
+            self.cupcakes.push(cupcake)
+        }
+    }
+
     fn price(&self) -> f32 {
         self.cupcakes.iter().map(|x| x.price() * 0.9).sum()
     }
@@ -210,6 +216,28 @@ mod test {
         assert_eq!(
             format!("{:.2}", (1.0 * 0.9) + (1.1 * 0.9)),
             format!("{:.2}", bundle.price())
+        );
+    }
+
+    #[test]
+    fn bundle_of_bundles() {
+        let mut first_bundle = Bundle::new();
+        first_bundle.add(Box::new(PlainCupcake::new()));
+        first_bundle.add(Box::new(ChocolateCupcake::new(Box::new(PlainCupcake::new()))));
+        
+        let mut second_bundle = Bundle::new();
+        second_bundle.add(Box::new(CandiesCupcake::new(Box::new(PlainCupcake::new()))));
+        second_bundle.add(Box::new(ChocolateCupcake::new(Box::new(PlainCupcake::new()))));
+
+        let mut bundle_of_bundles = Bundle::new();
+        bundle_of_bundles.add_bundle(first_bundle);
+        bundle_of_bundles.add_bundle(second_bundle);
+
+        let first_bundle_expected_price = (1.0 * 0.9) + (1.1 * 0.9);
+        let second_bundle_expected_price = (1.7 * 0.9) + (1.1 * 0.9);
+        assert_eq!(
+            format!("{:.2}", first_bundle_expected_price + second_bundle_expected_price),
+            format!("{:.2}", bundle_of_bundles.price())
         );
     }
 }
