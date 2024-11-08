@@ -32,7 +32,12 @@ struct ChocolateCupcake {
 
 impl Cupcake for ChocolateCupcake {
     fn print(&self) -> String {
-        format!("{} with 🍫", self.cupcake.print())
+        if self.cupcake.is_topping() {
+            format!("{} and 🍫", self.cupcake.print())
+        }
+        else {
+            format!("{} with 🍫", self.cupcake.print())
+        }
     }
     
     fn is_topping(&self) -> bool {
@@ -97,5 +102,12 @@ mod test {
         let cupcake = NutsCupcake::new(Box::new(ChocolateCupcake::new(Box::new(PlainCupcake {}))));
 
         assert_eq!("🧁 with 🍫 and 🥜", cupcake.print());
+    }
+
+    #[test]
+    fn puts_nuts_and_chocolate_on_top() {
+        let cupcake = ChocolateCupcake::new(Box::new(NutsCupcake::new(Box::new(PlainCupcake {}))));
+
+        assert_eq!("🧁 with 🥜 and 🍫", cupcake.print());
     }
 }
