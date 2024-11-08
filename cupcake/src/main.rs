@@ -30,7 +30,7 @@ impl Cupcake for PlainCupcake {
     fn has_topping(&self) -> bool {
         false
     }
-    
+
     fn price(&self) -> f32 {
         1.0
     }
@@ -52,7 +52,7 @@ impl Cupcake for ChocolateCupcake {
     fn has_topping(&self) -> bool {
         true
     }
-    
+
     fn price(&self) -> f32 {
         0.1 + self.cupcake.price()
     }
@@ -80,7 +80,7 @@ impl Cupcake for NutsCupcake {
     fn has_topping(&self) -> bool {
         true
     }
-    
+
     fn price(&self) -> f32 {
         0.2 + self.cupcake.price()
     }
@@ -108,7 +108,7 @@ impl Cupcake for CandiesCupcake {
     fn has_topping(&self) -> bool {
         true
     }
-    
+
     fn price(&self) -> f32 {
         0.7 + self.cupcake.price()
     }
@@ -117,6 +117,26 @@ impl Cupcake for CandiesCupcake {
 impl CupcakeDecorator for CandiesCupcake {
     fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake {
         CandiesCupcake { cupcake }
+    }
+}
+
+struct Bundle {
+    cupcakes: Vec<Box<dyn Cupcake>>
+}
+
+impl Bundle {
+    fn new() -> Self {
+        Self {
+            cupcakes: vec!()
+        }
+    }
+
+    fn add(&mut self, cupcake: Box<dyn Cupcake>) {
+        self.cupcakes.push(cupcake);
+    }
+
+    fn price(&self) -> f32 {
+        self.cupcakes.iter().map(|x| x.price() * 0.9).sum()
     }
 }
 
@@ -176,5 +196,20 @@ mod test {
 
         assert_eq!("🧁 with 🥜 and 🍫 and 🍬", cupcake.description());
         assert_eq!("2.00", format!("{:.2}", cupcake.price()));
+    }
+
+    #[test]
+    fn bundle() {
+        let plain_cupcake = PlainCupcake::new();
+        let choco_cupcake = ChocolateCupcake::new(Box::new(PlainCupcake::new()));
+
+        let mut bundle = Bundle::new();
+        bundle.add(Box::new(plain_cupcake));
+        bundle.add(Box::new(choco_cupcake));
+
+        assert_eq!(
+            format!("{:.2}", (1.0 * 0.9) + (1.1 * 0.9)),
+            format!("{:.2}", bundle.price())
+        );
     }
 }
