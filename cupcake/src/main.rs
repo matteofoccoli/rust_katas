@@ -6,6 +6,8 @@ trait Cupcake {
     fn description(&self) -> String;
 
     fn has_topping(&self) -> bool;
+
+    fn price(&self) -> f32;
 }
 
 trait CupcakeDecorator {
@@ -28,6 +30,10 @@ impl Cupcake for PlainCupcake {
     fn has_topping(&self) -> bool {
         false
     }
+    
+    fn price(&self) -> f32 {
+        1.0
+    }
 }
 
 struct ChocolateCupcake {
@@ -45,6 +51,10 @@ impl Cupcake for ChocolateCupcake {
 
     fn has_topping(&self) -> bool {
         true
+    }
+    
+    fn price(&self) -> f32 {
+        0.1 + self.cupcake.price()
     }
 }
 
@@ -70,6 +80,10 @@ impl Cupcake for NutsCupcake {
     fn has_topping(&self) -> bool {
         true
     }
+    
+    fn price(&self) -> f32 {
+        0.2 + self.cupcake.price()
+    }
 }
 
 impl CupcakeDecorator for NutsCupcake {
@@ -94,6 +108,10 @@ impl Cupcake for CandiesCupcake {
     fn has_topping(&self) -> bool {
         true
     }
+    
+    fn price(&self) -> f32 {
+        0.7 + self.cupcake.price()
+    }
 }
 
 impl CupcakeDecorator for CandiesCupcake {
@@ -112,6 +130,7 @@ mod test {
         let cupcake = PlainCupcake::new();
 
         assert_eq!("🧁", cupcake.description());
+        assert_eq!("1.00", format!("{:.2}", cupcake.price()));
     }
 
     #[test]
@@ -119,6 +138,7 @@ mod test {
         let cupcake = ChocolateCupcake::new(Box::new(PlainCupcake::new()));
 
         assert_eq!("🧁 with 🍫", cupcake.description());
+        assert_eq!("1.10", format!("{:.2}", cupcake.price()));
     }
 
     #[test]
@@ -126,6 +146,7 @@ mod test {
         let cupcake = NutsCupcake::new(Box::new(PlainCupcake::new()));
 
         assert_eq!("🧁 with 🥜", cupcake.description());
+        assert_eq!("1.20", format!("{:.2}", cupcake.price()));
     }
 
     #[test]
@@ -135,6 +156,7 @@ mod test {
         ))));
 
         assert_eq!("🧁 with 🍫 and 🥜", cupcake.description());
+        assert_eq!("1.30", format!("{:.2}", cupcake.price()));
     }
 
     #[test]
@@ -143,6 +165,7 @@ mod test {
             ChocolateCupcake::new(Box::new(NutsCupcake::new(Box::new(PlainCupcake::new()))));
 
         assert_eq!("🧁 with 🥜 and 🍫", cupcake.description());
+        assert_eq!("1.30", format!("{:.2}", cupcake.price()));
     }
 
     #[test]
@@ -152,5 +175,6 @@ mod test {
         ))));
 
         assert_eq!("🧁 with 🥜 and 🍫 and 🍬", cupcake.description());
+        assert_eq!("2.00", format!("{:.2}", cupcake.price()));
     }
 }
