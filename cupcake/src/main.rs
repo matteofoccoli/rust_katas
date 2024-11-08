@@ -2,7 +2,7 @@ fn main() {
     println!("Hello, world!");
 }
 
-trait Cupcake {
+trait Pastry {
     fn description(&self) -> String;
 
     fn has_topping(&self) -> bool;
@@ -10,19 +10,19 @@ trait Cupcake {
     fn price(&self) -> f32;
 }
 
-trait CupcakeDecorator {
-    fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake;
+trait PastryDecorator {
+    fn new(cupcake: Box<dyn Pastry>) -> impl Pastry;
 }
 
-struct PlainCupcake {}
+struct Cupcake {}
 
-impl PlainCupcake {
+impl Cupcake {
     fn new() -> Self {
         Self {}
     }
 }
 
-impl Cupcake for PlainCupcake {
+impl Pastry for Cupcake {
     fn description(&self) -> String {
         "🧁".to_string()
     }
@@ -36,16 +36,38 @@ impl Cupcake for PlainCupcake {
     }
 }
 
-struct ChocolateCupcake {
-    cupcake: Box<dyn Cupcake>,
+struct Cookie {}
+
+impl Cookie {
+    fn new() -> Self {
+        Self {}
+    }
 }
 
-impl Cupcake for ChocolateCupcake {
+impl Pastry for Cookie {
     fn description(&self) -> String {
-        if self.cupcake.has_topping() {
-            format!("{} and 🍫", self.cupcake.description())
+        "🍪".to_string()
+    }
+
+    fn has_topping(&self) -> bool {
+        false
+    }
+
+    fn price(&self) -> f32 {
+        2.0
+    }
+}
+
+struct Chocolate {
+    pastry: Box<dyn Pastry>,
+}
+
+impl Pastry for Chocolate {
+    fn description(&self) -> String {
+        if self.pastry.has_topping() {
+            format!("{} and 🍫", self.pastry.description())
         } else {
-            format!("{} with 🍫", self.cupcake.description())
+            format!("{} with 🍫", self.pastry.description())
         }
     }
 
@@ -54,26 +76,26 @@ impl Cupcake for ChocolateCupcake {
     }
 
     fn price(&self) -> f32 {
-        0.1 + self.cupcake.price()
+        0.1 + self.pastry.price()
     }
 }
 
-impl CupcakeDecorator for ChocolateCupcake {
-    fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake {
-        ChocolateCupcake { cupcake }
+impl PastryDecorator for Chocolate {
+    fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
+        Chocolate { pastry }
     }
 }
 
-struct NutsCupcake {
-    cupcake: Box<dyn Cupcake>,
+struct Nuts {
+    pastry: Box<dyn Pastry>,
 }
 
-impl Cupcake for NutsCupcake {
+impl Pastry for Nuts {
     fn description(&self) -> String {
-        if self.cupcake.has_topping() {
-            format!("{} and 🥜", self.cupcake.description())
+        if self.pastry.has_topping() {
+            format!("{} and 🥜", self.pastry.description())
         } else {
-            format!("{} with 🥜", self.cupcake.description())
+            format!("{} with 🥜", self.pastry.description())
         }
     }
 
@@ -82,21 +104,21 @@ impl Cupcake for NutsCupcake {
     }
 
     fn price(&self) -> f32 {
-        0.2 + self.cupcake.price()
+        0.2 + self.pastry.price()
     }
 }
 
-impl CupcakeDecorator for NutsCupcake {
-    fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake {
-        NutsCupcake { cupcake }
+impl PastryDecorator for Nuts {
+    fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
+        Nuts { pastry }
     }
 }
 
-struct CandiesCupcake {
-    cupcake: Box<dyn Cupcake>,
+struct Candies {
+    cupcake: Box<dyn Pastry>,
 }
 
-impl Cupcake for CandiesCupcake {
+impl Pastry for Candies {
     fn description(&self) -> String {
         if self.cupcake.has_topping() {
             format!("{} and 🍬", self.cupcake.description())
@@ -114,14 +136,14 @@ impl Cupcake for CandiesCupcake {
     }
 }
 
-impl CupcakeDecorator for CandiesCupcake {
-    fn new(cupcake: Box<dyn Cupcake>) -> impl Cupcake {
-        CandiesCupcake { cupcake }
+impl PastryDecorator for Candies {
+    fn new(cupcake: Box<dyn Pastry>) -> impl Pastry {
+        Candies { cupcake }
     }
 }
 
 struct Bundle {
-    cupcakes: Vec<Box<dyn Cupcake>>
+    cupcakes: Vec<Box<dyn Pastry>>
 }
 
 impl Bundle {
@@ -131,7 +153,7 @@ impl Bundle {
         }
     }
 
-    fn add(&mut self, cupcake: Box<dyn Cupcake>) {
+    fn add(&mut self, cupcake: Box<dyn Pastry>) {
         self.cupcakes.push(cupcake);
     }
 
@@ -152,33 +174,49 @@ mod test {
     use super::*;
 
     #[test]
-    fn creates_a_plain_cupcake() {
-        let cupcake = PlainCupcake::new();
+    fn creates_a_cupcake() {
+        let cupcake = Cupcake::new();
 
         assert_eq!("🧁", cupcake.description());
         assert_eq!("1.00", format!("{:.2}", cupcake.price()));
     }
 
     #[test]
-    fn has_chocolate() {
-        let cupcake = ChocolateCupcake::new(Box::new(PlainCupcake::new()));
+    fn creates_a_cookie() {
+        let cookie = Cookie::new();
 
-        assert_eq!("🧁 with 🍫", cupcake.description());
-        assert_eq!("1.10", format!("{:.2}", cupcake.price()));
+        assert_eq!("🍪", cookie.description());
+        assert_eq!("2.00", format!("{:.2}", cookie.price()));
     }
 
     #[test]
-    fn has_nuts() {
-        let cupcake = NutsCupcake::new(Box::new(PlainCupcake::new()));
+    fn a_cupcake_with_chocolate() {
+        let cupcake = Chocolate::new(Box::new(Cupcake::new()));
+
+        assert_eq!("🧁 with 🍫", cupcake.description());
+        assert_eq!("2.10", format!("{:.2}", cupcake.price()));
+    }
+
+    #[test]
+    fn a_cookie_with_chocolate() {
+        let cookie = Chocolate::new(Box::new(Cookie::new()));
+
+        assert_eq!("🍪 with 🍫", cookie.description());
+        assert_eq!("1.10", format!("{:.2}", cookie.price()));
+    }
+
+    #[test]
+    fn a_cupcake_with_nuts() {
+        let cupcake = Nuts::new(Box::new(Cupcake::new()));
 
         assert_eq!("🧁 with 🥜", cupcake.description());
         assert_eq!("1.20", format!("{:.2}", cupcake.price()));
     }
 
     #[test]
-    fn has_chocolate_an_nuts() {
-        let cupcake = NutsCupcake::new(Box::new(ChocolateCupcake::new(Box::new(
-            PlainCupcake::new(),
+    fn a_cupcake_with_chocolate_an_nuts() {
+        let cupcake = Nuts::new(Box::new(Chocolate::new(Box::new(
+            Cupcake::new(),
         ))));
 
         assert_eq!("🧁 with 🍫 and 🥜", cupcake.description());
@@ -186,18 +224,18 @@ mod test {
     }
 
     #[test]
-    fn has_nuts_and_chocolate() {
+    fn a_cupcake_with_nuts_and_chocolate() {
         let cupcake =
-            ChocolateCupcake::new(Box::new(NutsCupcake::new(Box::new(PlainCupcake::new()))));
+            Chocolate::new(Box::new(Nuts::new(Box::new(Cupcake::new()))));
 
         assert_eq!("🧁 with 🥜 and 🍫", cupcake.description());
         assert_eq!("1.30", format!("{:.2}", cupcake.price()));
     }
 
     #[test]
-    fn has_nuts_chocolate_and_candies() {
-        let cupcake = CandiesCupcake::new(Box::new(ChocolateCupcake::new(Box::new(
-            NutsCupcake::new(Box::new(PlainCupcake::new())),
+    fn a_cupcake_with_nuts_chocolate_and_candies() {
+        let cupcake = Candies::new(Box::new(Chocolate::new(Box::new(
+            Nuts::new(Box::new(Cupcake::new())),
         ))));
 
         assert_eq!("🧁 with 🥜 and 🍫 and 🍬", cupcake.description());
@@ -206,8 +244,8 @@ mod test {
 
     #[test]
     fn bundle() {
-        let plain_cupcake = PlainCupcake::new();
-        let choco_cupcake = ChocolateCupcake::new(Box::new(PlainCupcake::new()));
+        let plain_cupcake = Cupcake::new();
+        let choco_cupcake = Chocolate::new(Box::new(Cupcake::new()));
 
         let mut bundle = Bundle::new();
         bundle.add(Box::new(plain_cupcake));
@@ -222,12 +260,12 @@ mod test {
     #[test]
     fn bundle_of_bundles() {
         let mut first_bundle = Bundle::new();
-        first_bundle.add(Box::new(PlainCupcake::new()));
-        first_bundle.add(Box::new(ChocolateCupcake::new(Box::new(PlainCupcake::new()))));
+        first_bundle.add(Box::new(Cupcake::new()));
+        first_bundle.add(Box::new(Chocolate::new(Box::new(Cupcake::new()))));
         
         let mut second_bundle = Bundle::new();
-        second_bundle.add(Box::new(CandiesCupcake::new(Box::new(PlainCupcake::new()))));
-        second_bundle.add(Box::new(ChocolateCupcake::new(Box::new(PlainCupcake::new()))));
+        second_bundle.add(Box::new(Candies::new(Box::new(Cupcake::new()))));
+        second_bundle.add(Box::new(Chocolate::new(Box::new(Cupcake::new()))));
 
         let mut bundle_of_bundles = Bundle::new();
         bundle_of_bundles.add_bundle(first_bundle);
