@@ -16,7 +16,7 @@ impl PricingRule {
     fn discount(&self, items: &Vec<Item>) -> f32 {
         let discountable_items_count = items.iter().filter(|i| i.sku == "A".to_string()).count();
         if discountable_items_count > 1 {
-            return 5.0;
+            return 20.0;
         } else {
             return 0.0;
         }
@@ -45,32 +45,26 @@ impl CheckOut {
 mod tests {
     use super::*;
 
+
     #[test]
-    fn one_item_in_the_cart() {
+    fn test_totals() {
+        assert_eq!(50.0, price("A".to_string()));
+        assert_eq!(80.0, price("AB".to_string()));
+        assert_eq!(130.0, price("AAA".to_string()));
+        assert_eq!(180.0, price("AAAA".to_string()));
+        assert_eq!(230.0, price("AAAAA".to_string()));
+    }
+
+    fn price(skus: String) -> f32 {
         let mut check_out = CheckOut::new(PricingRule { sku: "A".to_string() });
-
-        check_out.scan(Item {sku: "A".to_string(), unit_price: 10.0});
-
-        assert_eq!(10.0, check_out.total());
+        skus.chars().for_each(|sku| {
+            match sku {
+                'A' => check_out.scan(Item {sku: "A".to_string(), unit_price: 50.0}),
+                'B' => check_out.scan(Item {sku: "B".to_string(), unit_price: 30.0}),
+                _ => ()
+            }
+        });
+        check_out.total()
     }
 
-    #[test]
-    fn two_items_in_the_cart() {
-        let mut check_out = CheckOut::new(PricingRule {sku: "A".to_string()});
-
-        check_out.scan(Item {sku: "A".to_string(), unit_price: 10.0});
-        check_out.scan(Item {sku: "B".to_string(), unit_price: 20.0});
-
-        assert_eq!(30.0, check_out.total());
-    }
-
-    #[test]
-    fn special_offer_on_an_item() {
-        let mut check_out = CheckOut::new(PricingRule {sku: "A".to_string()});
-
-        check_out.scan(Item {sku: "A".to_string(), unit_price: 10.0});
-        check_out.scan(Item {sku: "A".to_string(), unit_price: 10.0});
-
-        assert_eq!(15.0, check_out.total());
-    }
 }
