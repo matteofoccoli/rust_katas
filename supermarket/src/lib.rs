@@ -15,11 +15,7 @@ struct PricingRule {
 impl PricingRule {
     fn discount(&self, items: &Vec<Item>) -> f32 {
         let discountable_items_count = items.iter().filter(|i| i.sku == "A".to_string()).count();
-        if discountable_items_count > 1 {
-            return 20.0;
-        } else {
-            return 0.0;
-        }
+        ((discountable_items_count / 3) * 20) as f32
     }
 }
 
@@ -48,11 +44,14 @@ mod tests {
 
     #[test]
     fn test_totals() {
+        assert_eq!(0.0, price("".to_string()));
         assert_eq!(50.0, price("A".to_string()));
         assert_eq!(80.0, price("AB".to_string()));
+        assert_eq!(115.0, price("CDBA".to_string()));
         assert_eq!(130.0, price("AAA".to_string()));
         assert_eq!(180.0, price("AAAA".to_string()));
         assert_eq!(230.0, price("AAAAA".to_string()));
+        assert_eq!(260.0, price("AAAAAA".to_string()));
     }
 
     fn price(skus: String) -> f32 {
@@ -61,6 +60,8 @@ mod tests {
             match sku {
                 'A' => check_out.scan(Item {sku: "A".to_string(), unit_price: 50.0}),
                 'B' => check_out.scan(Item {sku: "B".to_string(), unit_price: 30.0}),
+                'C' => check_out.scan(Item {sku: "C".to_string(), unit_price: 20.0}),
+                'D' => check_out.scan(Item {sku: "D".to_string(), unit_price: 15.0}),
                 _ => ()
             }
         });
