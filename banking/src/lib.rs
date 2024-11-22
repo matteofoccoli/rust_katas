@@ -9,6 +9,8 @@ struct Transaction {
     amount: f32,
 }
 
+const AMOUNT_ERROR: &str = "Amount must be positive";
+
 impl Account {
     fn new() -> Self {
         Self {
@@ -16,15 +18,25 @@ impl Account {
         }
     }
 
-    fn deposit(&mut self, amount: f32, timestamp: DateTime<Utc>) {
-        self.transactions.push(Transaction { timestamp, amount })
+    fn deposit(&mut self, amount: f32, timestamp: DateTime<Utc>) -> Result<(), String> {
+        if amount < 0.0 {
+            return Err(AMOUNT_ERROR.to_string());
+        }
+        self.transactions.push(Transaction { timestamp, amount });
+        self.sort_transaction_by_timestamp_asc();
+        Ok(())
     }
 
-    fn withdraw(&mut self, amount: f32, timestamp: DateTime<Utc>) {
+    fn withdraw(&mut self, amount: f32, timestamp: DateTime<Utc>) -> Result<(), String> {
+        if amount < 0.0 {
+            return Err(AMOUNT_ERROR.to_string());
+        }
         self.transactions.push(Transaction {
             timestamp,
             amount: -amount,
-        })
+        });
+        self.sort_transaction_by_timestamp_asc();
+        Ok(())
     }
 
     fn print_statement(&self) -> String {
@@ -81,6 +93,11 @@ impl Account {
             current_balance
         )
     }
+
+    fn sort_transaction_by_timestamp_asc(&mut self) {
+        self.transactions
+            .sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+    }
 }
 
 #[cfg(test)]
@@ -107,6 +124,24 @@ mod tests {
             24.12.2015   +500      500"
             .to_string();
         assert_eq!(expected_statement, statement);
+    }
+
+    #[test]
+    fn accepts_only_positive_numbers_in_deposit() {
+        let mut account = Account::new();
+
+        let result = account.deposit(-500.0, parse_date("2015-12-24"));
+
+        assert!(matches!(result, Err(message) if message == AMOUNT_ERROR.to_string()))
+    }
+
+    #[test]
+    fn accepts_only_positive_numbers_in_withdraw() {
+        let mut account = Account::new();
+
+        let result = account.withdraw(-500.0, parse_date("2015-12-24"));
+
+        assert!(matches!(result, Err(message) if message == AMOUNT_ERROR.to_string()))
     }
 
     #[test]
@@ -149,7 +184,7 @@ mod tests {
 
         let expected_statement = "Date        Amount  Balance\n\
             23.11.2017   +100      100\n\
-            24.12.2018   +500      400"
+            24.12.2018   +500      600"
             .to_string();
         assert_eq!(expected_statement, statement);
     }
