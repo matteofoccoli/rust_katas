@@ -51,47 +51,30 @@ impl Account {
     }
 
     fn print_transaction_line(&self, transaction: &Transaction, current_balance: f32) -> String {
-        if transaction.timestamp.month() < 10 {
-            self.get_transaction_line_for_month_with_less_than_two_digits(
-                transaction,
-                current_balance,
-            )
+        format!(
+            "\n{}   {}{}      {}{}",
+            self.format_date(transaction.timestamp),
+            self.get_sign(transaction.amount),
+            transaction.amount.abs(),
+            self.get_sign(current_balance),
+            current_balance.abs()
+        )
+    }
+
+    fn get_sign(&self, current_balance: f32) -> char {
+        if current_balance < 0.0 {
+            '-'
         } else {
-            self.get_transaction_line_for_month_with_two_digits(transaction, current_balance)
+            '+'
         }
     }
 
-    fn get_transaction_sign(&self, transaction: &Transaction) -> char {
-        let transaction_sign = if transaction.amount >= 0.0 { '+' } else { '-' };
-        transaction_sign
-    }
-
-    fn get_transaction_line_for_month_with_two_digits(
-        &self,
-        transaction: &Transaction,
-        current_balance: f32,
-    ) -> String {
-        format!(
-            "\n{}   {}{}      {}",
-            transaction.timestamp.format("%d.%-m.%Y"),
-            self.get_transaction_sign(transaction),
-            transaction.amount.abs(),
-            current_balance
-        )
-    }
-
-    fn get_transaction_line_for_month_with_less_than_two_digits(
-        &self,
-        transaction: &Transaction,
-        current_balance: f32,
-    ) -> String {
-        format!(
-            "\n{}    {}{}      {}",
-            transaction.timestamp.format("%d.%-m.%Y"),
-            self.get_transaction_sign(transaction),
-            transaction.amount.abs(),
-            current_balance
-        )
+    fn format_date(&self, date: DateTime<Utc>) -> String {
+        if date.month() < 10 {
+            format!("{} ", date.format("%d.%-m.%Y"))
+        } else {
+            format!("{}", date.format("%d.%-m.%Y"))
+        }
     }
 
     fn sort_transaction_by_timestamp_asc(&mut self) {
@@ -121,7 +104,7 @@ mod tests {
         let statement = account.print_statement();
 
         let expected_statement = "Date        Amount  Balance\n\
-            24.12.2015   +500      500"
+            24.12.2015   +500      +500"
             .to_string();
         assert_eq!(expected_statement, statement);
     }
@@ -153,8 +136,8 @@ mod tests {
         let statement = account.print_statement();
 
         let expected_statement = "Date        Amount  Balance\n\
-            22.12.2015   +10      10\n\
-            24.12.2015   +20      30"
+            22.12.2015   +10      +10\n\
+            24.12.2015   +20      +30"
             .to_string();
         assert_eq!(expected_statement, statement);
     }
@@ -168,8 +151,8 @@ mod tests {
         let statement = account.print_statement();
 
         let expected_statement = "Date        Amount  Balance\n\
-            24.12.2015   +500      500\n\
-            23.8.2016    -100      400"
+            24.12.2015   +500      +500\n\
+            23.8.2016    -100      +400"
             .to_string();
         assert_eq!(expected_statement, statement);
     }
@@ -183,8 +166,23 @@ mod tests {
         let statement = account.print_statement();
 
         let expected_statement = "Date        Amount  Balance\n\
-            23.11.2017   +100      100\n\
-            24.12.2018   +500      600"
+            23.11.2017   +100      +100\n\
+            24.12.2018   +500      +600"
+            .to_string();
+        assert_eq!(expected_statement, statement);
+    }
+
+    #[test]
+    fn pretty_prints_negative_balance() {
+        let mut account = Account::new();
+        account.deposit(500.0, parse_date("2018-12-24"));
+        account.withdraw(100.0, parse_date("2017-11-23"));
+
+        let statement = account.print_statement();
+
+        let expected_statement = "Date        Amount  Balance\n\
+            23.11.2017   -100      -100\n\
+            24.12.2018   +500      +400"
             .to_string();
         assert_eq!(expected_statement, statement);
     }
