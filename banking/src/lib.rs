@@ -50,4 +50,18 @@ mod tests {
             .to_string();
         assert_eq!(expected_statement, statement);
     }
+
+    fn prints_statement_with_two_deposits() {
+        let mut account = Account::new();
+        account.deposit(10.0);
+        account.deposit(20.0);
+
+        let statement = account.print_statement();
+
+        let expected_statement = "Date        Amount  Balance\n\
+            24.12.2015   +10      10\n\
+            24.12.2015   +20      30"
+            .to_string();
+        assert_eq!(expected_statement, statement);
+    }
 }
