@@ -1,2 +1,2 @@
 - [ ] Introduce money object
-- [ ] ...
+- [ ] Move unit price into policy? Base policy?
