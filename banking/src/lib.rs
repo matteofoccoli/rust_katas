@@ -9,6 +9,12 @@ pub struct Transaction {
     amount: f32,
 }
 
+impl Transaction {
+    pub fn new(amount: f32, timestamp: DateTime<Utc>) -> Self {
+        Self { amount, timestamp }
+    }
+}
+
 const AMOUNT_ERROR: &str = "Amount must be positive";
 
 impl Account {
@@ -19,24 +25,11 @@ impl Account {
     }
 
     pub fn deposit(&mut self, amount: f32, timestamp: DateTime<Utc>) -> Result<(), String> {
-        if amount < 0.0 {
-            return Err(AMOUNT_ERROR.to_string());
-        }
-        self.transactions.push(Transaction { timestamp, amount });
-        self.sort_transaction_by_timestamp_asc();
-        Ok(())
+        self.add_transaction(amount, timestamp, |x| x)
     }
 
     pub fn withdraw(&mut self, amount: f32, timestamp: DateTime<Utc>) -> Result<(), String> {
-        if amount < 0.0 {
-            return Err(AMOUNT_ERROR.to_string());
-        }
-        self.transactions.push(Transaction {
-            timestamp,
-            amount: -amount,
-        });
-        self.sort_transaction_by_timestamp_asc();
-        Ok(())
+        self.add_transaction(amount, timestamp, |x| -x)
     }
 
     pub fn print_statement(&self) -> String {
@@ -75,6 +68,21 @@ impl Account {
         } else {
             format!("{}", date.format("%d.%-m.%Y"))
         }
+    }
+
+    fn add_transaction(
+        &mut self,
+        amount: f32,
+        timestamp: DateTime<Utc>,
+        transform_amount: fn(f32) -> f32,
+    ) -> Result<(), String> {
+        if amount < 0.0 {
+            return Err(AMOUNT_ERROR.to_string());
+        }
+        self.transactions
+            .push(Transaction::new(transform_amount(amount), timestamp));
+        self.sort_transaction_by_timestamp_asc();
+        Ok(())
     }
 
     fn sort_transaction_by_timestamp_asc(&mut self) {
