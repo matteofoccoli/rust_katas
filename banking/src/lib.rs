@@ -139,6 +139,21 @@ mod tests {
         assert_eq!(expected_statement, statement);
     }
 
+    #[test]
+    fn prints_statement_with_transaction_ordered_by_timestamp_ascending() {
+        let mut account = Account::new();
+        account.deposit(500.0, parse_date("2018-12-24"));
+        account.deposit(100.0, parse_date("2017-11-23"));
+
+        let statement = account.print_statement();
+
+        let expected_statement = "Date        Amount  Balance\n\
+            23.11.2017   +100      100\n\
+            24.12.2018   +500      400"
+            .to_string();
+        assert_eq!(expected_statement, statement);
+    }
+
     fn parse_date(date_string: &str) -> DateTime<Utc> {
         let date_string = &format!("{} 00:00:00.000 +0000", date_string);
         let date_format = "%Y-%m-%d %H:%M:%S%.3f %z";
