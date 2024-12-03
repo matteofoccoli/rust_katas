@@ -69,7 +69,7 @@ mod tests {
         assert_eq!(
             "Cannot resize terminal to (width, height): 1000px, 200px",
             terminal.receive(Message::Resize {
-                width: 1000,
+                width: MAX_DIMENSION,
                 height: 200
             })
         );
