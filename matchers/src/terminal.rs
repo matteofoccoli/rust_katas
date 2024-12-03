@@ -9,6 +9,8 @@ pub enum Message {
     SetBackground(Color),
 }
 
+const MAX_DIMENSION: i32 = 1000;
+
 pub struct Terminal;
 
 impl Terminal {
@@ -20,6 +22,11 @@ impl Terminal {
             }
             Message::SetBackground(Color::Hex(hex)) => {
                 format!("Terminal set background color to: #{hex}")
+            }
+            Message::Resize { width, height }
+                if width >= MAX_DIMENSION || height >= MAX_DIMENSION =>
+            {
+                format!("Cannot resize terminal to (width, height): {width}px, {height}px")
             }
             Message::Resize { width, height } => {
                 format!("Terminal resized to (width, height): {width}px, {height}px")
@@ -55,6 +62,14 @@ mod tests {
             "Terminal resized to (width, height): 100px, 200px",
             terminal.receive(Message::Resize {
                 width: 100,
+                height: 200
+            })
+        );
+
+        assert_eq!(
+            "Cannot resize terminal to (width, height): 1000px, 200px",
+            terminal.receive(Message::Resize {
+                width: 1000,
                 height: 200
             })
         );
