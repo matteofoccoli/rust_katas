@@ -10,7 +10,7 @@ pub trait Pastry {
     fn price(&self) -> f32;
 }
 
-pub trait PastryDecorator {
+pub trait Topping {
     fn new(pastry: Box<dyn Pastry>) -> impl Pastry;
 }
 
@@ -80,7 +80,7 @@ impl Pastry for Chocolate {
     }
 }
 
-impl PastryDecorator for Chocolate {
+impl Topping for Chocolate {
     fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
         Chocolate { pastry }
     }
@@ -108,22 +108,22 @@ impl Pastry for Nuts {
     }
 }
 
-impl PastryDecorator for Nuts {
+impl Topping for Nuts {
     fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
         Nuts { pastry }
     }
 }
 
 struct Candies {
-    cupcake: Box<dyn Pastry>,
+    pastry: Box<dyn Pastry>,
 }
 
 impl Pastry for Candies {
     fn description(&self) -> String {
-        if self.cupcake.has_topping() {
-            format!("{} and 🍬", self.cupcake.description())
+        if self.pastry.has_topping() {
+            format!("{} and 🍬", self.pastry.description())
         } else {
-            format!("{} with 🍬", self.cupcake.description())
+            format!("{} with 🍬", self.pastry.description())
         }
     }
 
@@ -132,37 +132,37 @@ impl Pastry for Candies {
     }
 
     fn price(&self) -> f32 {
-        0.7 + self.cupcake.price()
+        0.7 + self.pastry.price()
     }
 }
 
-impl PastryDecorator for Candies {
-    fn new(cupcake: Box<dyn Pastry>) -> impl Pastry {
-        Candies { cupcake }
+impl Topping for Candies {
+    fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
+        Candies { pastry }
     }
 }
 
 pub struct Bundle {
-    cupcakes: Vec<Box<dyn Pastry>>,
+    pastries: Vec<Box<dyn Pastry>>,
 }
 
 impl Bundle {
     pub fn new() -> Self {
-        Self { cupcakes: vec![] }
+        Self { pastries: vec![] }
     }
 
-    pub fn add(&mut self, cupcake: Box<dyn Pastry>) {
-        self.cupcakes.push(cupcake);
+    pub fn add(&mut self, pastry: Box<dyn Pastry>) {
+        self.pastries.push(pastry);
     }
 
     pub fn add_bundle(&mut self, bundle: Bundle) {
-        for cupcake in bundle.cupcakes {
-            self.cupcakes.push(cupcake)
+        for pastry in bundle.pastries {
+            self.pastries.push(pastry)
         }
     }
 
     pub fn price(&self) -> f32 {
-        self.cupcakes.iter().map(|x| x.price() * 0.9).sum()
+        self.pastries.iter().map(|x| x.price() * 0.9).sum()
     }
 }
 
