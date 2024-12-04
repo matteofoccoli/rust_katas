@@ -11,7 +11,7 @@ pub trait Pastry {
 }
 
 pub trait PastryDecorator {
-    fn new(cupcake: Box<dyn Pastry>) -> impl Pastry;
+    fn new(pastry: Box<dyn Pastry>) -> impl Pastry;
 }
 
 pub struct Cupcake {}
@@ -192,7 +192,7 @@ mod test {
         let cupcake = Chocolate::new(Box::new(Cupcake::new()));
 
         assert_eq!("🧁 with 🍫", cupcake.description());
-        assert_eq!("2.10", format!("{:.2}", cupcake.price()));
+        assert_eq!("1.10", format!("{:.2}", cupcake.price()));
     }
 
     #[test]
@@ -200,7 +200,7 @@ mod test {
         let cookie = Chocolate::new(Box::new(Cookie::new()));
 
         assert_eq!("🍪 with 🍫", cookie.description());
-        assert_eq!("1.10", format!("{:.2}", cookie.price()));
+        assert_eq!("2.10", format!("{:.2}", cookie.price()));
     }
 
     #[test]
