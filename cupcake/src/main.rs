@@ -2,7 +2,7 @@ fn main() {
     println!("Hello, world!");
 }
 
-trait Pastry {
+pub trait Pastry {
     fn description(&self) -> String;
 
     fn has_topping(&self) -> bool;
@@ -10,14 +10,14 @@ trait Pastry {
     fn price(&self) -> f32;
 }
 
-trait PastryDecorator {
+pub trait PastryDecorator {
     fn new(cupcake: Box<dyn Pastry>) -> impl Pastry;
 }
 
-struct Cupcake {}
+pub struct Cupcake {}
 
 impl Cupcake {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }
@@ -36,10 +36,10 @@ impl Pastry for Cupcake {
     }
 }
 
-struct Cookie {}
+pub struct Cookie {}
 
 impl Cookie {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }
@@ -142,28 +142,26 @@ impl PastryDecorator for Candies {
     }
 }
 
-struct Bundle {
-    cupcakes: Vec<Box<dyn Pastry>>
+pub struct Bundle {
+    cupcakes: Vec<Box<dyn Pastry>>,
 }
 
 impl Bundle {
-    fn new() -> Self {
-        Self {
-            cupcakes: vec!()
-        }
+    pub fn new() -> Self {
+        Self { cupcakes: vec![] }
     }
 
-    fn add(&mut self, cupcake: Box<dyn Pastry>) {
+    pub fn add(&mut self, cupcake: Box<dyn Pastry>) {
         self.cupcakes.push(cupcake);
     }
 
-    fn add_bundle(&mut self, bundle: Bundle) {
+    pub fn add_bundle(&mut self, bundle: Bundle) {
         for cupcake in bundle.cupcakes {
             self.cupcakes.push(cupcake)
         }
     }
 
-    fn price(&self) -> f32 {
+    pub fn price(&self) -> f32 {
         self.cupcakes.iter().map(|x| x.price() * 0.9).sum()
     }
 }
@@ -215,9 +213,7 @@ mod test {
 
     #[test]
     fn a_cupcake_with_chocolate_an_nuts() {
-        let cupcake = Nuts::new(Box::new(Chocolate::new(Box::new(
-            Cupcake::new(),
-        ))));
+        let cupcake = Nuts::new(Box::new(Chocolate::new(Box::new(Cupcake::new()))));
 
         assert_eq!("🧁 with 🍫 and 🥜", cupcake.description());
         assert_eq!("1.30", format!("{:.2}", cupcake.price()));
@@ -225,8 +221,7 @@ mod test {
 
     #[test]
     fn a_cupcake_with_nuts_and_chocolate() {
-        let cupcake =
-            Chocolate::new(Box::new(Nuts::new(Box::new(Cupcake::new()))));
+        let cupcake = Chocolate::new(Box::new(Nuts::new(Box::new(Cupcake::new()))));
 
         assert_eq!("🧁 with 🥜 and 🍫", cupcake.description());
         assert_eq!("1.30", format!("{:.2}", cupcake.price()));
@@ -234,9 +229,9 @@ mod test {
 
     #[test]
     fn a_cupcake_with_nuts_chocolate_and_candies() {
-        let cupcake = Candies::new(Box::new(Chocolate::new(Box::new(
-            Nuts::new(Box::new(Cupcake::new())),
-        ))));
+        let cupcake = Candies::new(Box::new(Chocolate::new(Box::new(Nuts::new(Box::new(
+            Cupcake::new(),
+        ))))));
 
         assert_eq!("🧁 with 🥜 and 🍫 and 🍬", cupcake.description());
         assert_eq!("2.00", format!("{:.2}", cupcake.price()));
@@ -262,7 +257,7 @@ mod test {
         let mut first_bundle = Bundle::new();
         first_bundle.add(Box::new(Cupcake::new()));
         first_bundle.add(Box::new(Chocolate::new(Box::new(Cupcake::new()))));
-        
+
         let mut second_bundle = Bundle::new();
         second_bundle.add(Box::new(Candies::new(Box::new(Cupcake::new()))));
         second_bundle.add(Box::new(Chocolate::new(Box::new(Cupcake::new()))));
@@ -274,7 +269,10 @@ mod test {
         let first_bundle_expected_price = (1.0 * 0.9) + (1.1 * 0.9);
         let second_bundle_expected_price = (1.7 * 0.9) + (1.1 * 0.9);
         assert_eq!(
-            format!("{:.2}", first_bundle_expected_price + second_bundle_expected_price),
+            format!(
+                "{:.2}",
+                first_bundle_expected_price + second_bundle_expected_price
+            ),
             format!("{:.2}", bundle_of_bundles.price())
         );
     }
