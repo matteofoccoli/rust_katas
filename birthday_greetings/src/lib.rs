@@ -18,8 +18,8 @@ impl Greeter {
         Self { sender }
     }
 
-    pub fn send_greetings(&self) {
-        self.sender.send();
+    pub fn send_greetings(&self) -> Result<(), String> {
+        self.sender.send()
     }
 }
 
@@ -28,12 +28,27 @@ mod tests {
     use super::*;
 
     #[test]
-    fn greets() {
+    fn successfully_greets() {
         let mut sender = MockSender::new();
         sender.expect_send().once().returning(|| Ok(()));
 
         let greeter = Greeter::new(Box::new(sender));
+        let result = greeter.send_greetings();
 
-        greeter.send_greetings();
+        assert_eq!(result, Ok(()));
+    }
+
+    #[test]
+    fn handles_error_when_sending() {
+        let mut sender = MockSender::new();
+        sender
+            .expect_send()
+            .once()
+            .returning(|| Err("Error sending".to_string()));
+
+        let greeter = Greeter::new(Box::new(sender));
+        let result = greeter.send_greetings();
+
+        assert_eq!(result, Err("Error sending".to_string()));
     }
 }
