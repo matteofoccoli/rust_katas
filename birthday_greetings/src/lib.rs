@@ -1,5 +1,7 @@
 use mockall::automock;
 
+mod file_repository;
+
 #[derive(Debug, PartialEq)]
 pub struct Contact {
     pub first_name: String,
