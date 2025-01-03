@@ -1,0 +1,1 @@
+My solution to [Birthday greetings kata](https://codingdojo.org/kata/birthday-greetings/)
