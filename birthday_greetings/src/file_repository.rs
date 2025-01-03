@@ -23,6 +23,8 @@ impl FileRepository {
         let fragments: Vec<&str> = line.split(',').collect();
         Contact {
             first_name: fragments[1].trim().to_string(),
+            last_name: fragments[0].trim().to_string(),
+            email: fragments[3].trim().to_string(),
         }
     }
 }
@@ -44,13 +46,17 @@ mod tests {
         assert_eq!(
             contacts[0],
             Contact {
-                first_name: "John".to_string()
+                first_name: "John".to_string(),
+                last_name: "Doe".to_string(),
+                email: "john.doe@foobar.com".to_string()
             }
         );
         assert_eq!(
             contacts[1],
             Contact {
-                first_name: "Mary".to_string()
+                first_name: "Mary".to_string(),
+                last_name: "Ann".to_string(),
+                email: "mary.ann@foobar.com".to_string()
             }
         );
     }

@@ -5,6 +5,8 @@ mod file_repository;
 #[derive(Debug, PartialEq)]
 pub struct Contact {
     pub first_name: String,
+    pub last_name: String,
+    pub email: String,
 }
 
 #[automock]
@@ -119,9 +121,13 @@ mod tests {
         vec![
             Contact {
                 first_name: "Matteo".to_string(),
+                last_name: "Foo".to_string(),
+                email: "matteo@test.com".to_string(),
             },
             Contact {
-                first_name: "Alessandro".to_string(),
+                first_name: "Lily".to_string(),
+                last_name: "Bar".to_string(),
+                email: "lily@test.com".to_string(),
             },
         ]
     }
