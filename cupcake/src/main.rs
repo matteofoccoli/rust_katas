@@ -151,7 +151,7 @@ impl Bundle {
         Self { pastries: vec![] }
     }
 
-    pub fn add(&mut self, pastry: Box<dyn Pastry>) {
+    pub fn add_pastry(&mut self, pastry: Box<dyn Pastry>) {
         self.pastries.push(pastry);
     }
 
@@ -243,8 +243,8 @@ mod test {
         let choco_cupcake = Chocolate::new(Box::new(Cupcake::new()));
 
         let mut bundle = Bundle::new();
-        bundle.add(Box::new(plain_cupcake));
-        bundle.add(Box::new(choco_cupcake));
+        bundle.add_pastry(Box::new(plain_cupcake));
+        bundle.add_pastry(Box::new(choco_cupcake));
 
         assert_eq!(
             format!("{:.2}", (1.0 * 0.9) + (1.1 * 0.9)),
@@ -255,12 +255,12 @@ mod test {
     #[test]
     fn bundle_of_bundles() {
         let mut first_bundle = Bundle::new();
-        first_bundle.add(Box::new(Cupcake::new()));
-        first_bundle.add(Box::new(Chocolate::new(Box::new(Cupcake::new()))));
+        first_bundle.add_pastry(Box::new(Cupcake::new()));
+        first_bundle.add_pastry(Box::new(Chocolate::new(Box::new(Cupcake::new()))));
 
         let mut second_bundle = Bundle::new();
-        second_bundle.add(Box::new(Candies::new(Box::new(Cupcake::new()))));
-        second_bundle.add(Box::new(Chocolate::new(Box::new(Cupcake::new()))));
+        second_bundle.add_pastry(Box::new(Candies::new(Box::new(Cupcake::new()))));
+        second_bundle.add_pastry(Box::new(Chocolate::new(Box::new(Cupcake::new()))));
 
         let mut bundle_of_bundles = Bundle::new();
         bundle_of_bundles.add_bundle(first_bundle);
