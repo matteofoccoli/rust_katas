@@ -1,17 +1,13 @@
 use mockall::automock;
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+#[derive(Debug, PartialEq)]
+pub struct Contact {
+    pub first_name: String,
 }
 
 #[automock]
 pub trait Sender {
-    fn send(&self, contacts: Vec<Contact>) -> Result<(), String>;
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Contact {
-    pub first_name: String,
+    fn send(&self, contacts: Vec<Contact>) -> Result<usize, String>;
 }
 
 #[automock]
@@ -29,12 +25,13 @@ impl Greeter {
         Self { sender, repository }
     }
 
-    pub fn send_greetings(&self) -> Result<(), String> {
+    pub fn send_greetings(&self) -> Result<String, String> {
         let contacts = self.repository.load()?;
+        let mut sent_messages = 0;
         if let Some(contacts) = contacts {
-            return self.sender.send(contacts);
+            sent_messages = self.sender.send(contacts)?;
         }
-        Ok(())
+        Ok(format!("Sent {sent_messages} message"))
     }
 }
 
@@ -51,7 +48,7 @@ mod tests {
             .expect_send()
             .with(eq(contacts()))
             .once()
-            .returning(|_| Ok(()));
+            .returning(|_| Ok(contacts().len()));
 
         let mut repository = MockRepository::new();
         repository
@@ -62,13 +59,7 @@ mod tests {
         let greeter = Greeter::new(Box::new(sender), Box::new(repository));
         let result = greeter.send_greetings();
 
-        assert_eq!(result, Ok(()));
-    }
-
-    fn contacts() -> Vec<Contact> {
-        vec![Contact {
-            first_name: "Matteo".to_string(),
-        }]
+        assert_eq!(result, Ok("Sent 2 message".to_string()));
     }
 
     #[test]
@@ -89,5 +80,47 @@ mod tests {
         let result = greeter.send_greetings();
 
         assert_eq!(result, Err("Error sending".to_string()));
+    }
+
+    #[test]
+    fn handles_error_when_loading_contacts() {
+        let mut sender = MockSender::new();
+        sender.expect_send().never();
+
+        let mut repository = MockRepository::new();
+        repository
+            .expect_load()
+            .once()
+            .return_once(|| Err("Error loading contacts".to_string()));
+
+        let greeter = Greeter::new(Box::new(sender), Box::new(repository));
+        let result = greeter.send_greetings();
+
+        assert_eq!(result, Err("Error loading contacts".to_string()));
+    }
+
+    #[test]
+    fn does_not_send_greeting_if_contacts_are_empty() {
+        let mut sender = MockSender::new();
+        sender.expect_send().never();
+
+        let mut repository = MockRepository::new();
+        repository.expect_load().once().return_once(|| Ok(None));
+
+        let greeter = Greeter::new(Box::new(sender), Box::new(repository));
+        let result = greeter.send_greetings();
+
+        assert_eq!(result, Ok("Sent 0 message".to_string()));
+    }
+
+    fn contacts() -> Vec<Contact> {
+        vec![
+            Contact {
+                first_name: "Matteo".to_string(),
+            },
+            Contact {
+                first_name: "Alessandro".to_string(),
+            },
+        ]
     }
 }
