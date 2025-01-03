@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use mockall::automock;
 
 mod file_repository;
@@ -7,6 +8,7 @@ pub struct Contact {
     pub first_name: String,
     pub last_name: String,
     pub email: String,
+    pub date_of_birth: NaiveDate,
 }
 
 #[automock]
@@ -123,11 +125,13 @@ mod tests {
                 first_name: "Matteo".to_string(),
                 last_name: "Foo".to_string(),
                 email: "matteo@test.com".to_string(),
+                date_of_birth: NaiveDate::parse_from_str("2015-09-05", "%Y-%m-%d").unwrap(),
             },
             Contact {
                 first_name: "Lily".to_string(),
                 last_name: "Bar".to_string(),
                 email: "lily@test.com".to_string(),
+                date_of_birth: NaiveDate::parse_from_str("2015-09-05", "%Y-%m-%d").unwrap(),
             },
         ]
     }

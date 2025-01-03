@@ -1,3 +1,5 @@
+use chrono::NaiveDate;
+
 use crate::{Contact, Repository};
 use std::fs::read_to_string;
 
@@ -25,6 +27,7 @@ impl FileRepository {
             first_name: fragments[1].trim().to_string(),
             last_name: fragments[0].trim().to_string(),
             email: fragments[3].trim().to_string(),
+            date_of_birth: NaiveDate::parse_from_str(fragments[2], "%Y/%m/%d").unwrap(),
         }
     }
 }
@@ -34,7 +37,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn fails_miserably() {
+    fn reads_contacts_from_file() {
         let repo = FileRepository {
             file_path: "contacts.txt".to_string(),
         };
@@ -48,7 +51,8 @@ mod tests {
             Contact {
                 first_name: "John".to_string(),
                 last_name: "Doe".to_string(),
-                email: "john.doe@foobar.com".to_string()
+                email: "john.doe@foobar.com".to_string(),
+                date_of_birth: NaiveDate::parse_from_str("1982/10/08", "%Y/%m/%d").unwrap(),
             }
         );
         assert_eq!(
@@ -56,7 +60,8 @@ mod tests {
             Contact {
                 first_name: "Mary".to_string(),
                 last_name: "Ann".to_string(),
-                email: "mary.ann@foobar.com".to_string()
+                email: "mary.ann@foobar.com".to_string(),
+                date_of_birth: NaiveDate::parse_from_str("1975/09/11", "%Y/%m/%d").unwrap(),
             }
         );
     }
