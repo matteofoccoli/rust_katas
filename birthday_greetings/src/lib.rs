@@ -6,9 +6,10 @@ pub fn add(left: u64, right: u64) -> u64 {
 
 #[automock]
 pub trait Sender {
-    fn send(&self) -> Result<(), String>;
+    fn send(&self, contacts: Vec<Contact>) -> Result<(), String>;
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Contact {
     pub first_name: String,
 }
@@ -29,27 +30,34 @@ impl Greeter {
     }
 
     pub fn send_greetings(&self) -> Result<(), String> {
-        self.repository.load();
-        self.sender.send()
+        let contacts = self.repository.load()?;
+        if let Some(contacts) = contacts {
+            return self.sender.send(contacts);
+        }
+        Ok(())
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use mockall::predicate::eq;
+
     use super::*;
 
     #[test]
     fn successfully_greets() {
-        let contacts = create_contacts();
-
         let mut sender = MockSender::new();
-        sender.expect_send().once().returning(|| Ok(()));
+        sender
+            .expect_send()
+            .with(eq(contacts()))
+            .once()
+            .returning(|_| Ok(()));
 
         let mut repository = MockRepository::new();
         repository
             .expect_load()
             .once()
-            .return_once(|| Ok(Some(contacts)));
+            .return_once(|| Ok(Some(contacts())));
 
         let greeter = Greeter::new(Box::new(sender), Box::new(repository));
         let result = greeter.send_greetings();
@@ -57,28 +65,25 @@ mod tests {
         assert_eq!(result, Ok(()));
     }
 
-    fn create_contacts() -> Vec<Contact> {
+    fn contacts() -> Vec<Contact> {
         vec![Contact {
             first_name: "Matteo".to_string(),
         }]
     }
 
     #[test]
-    #[ignore]
     fn handles_error_when_sending() {
-        let contacts = create_contacts();
-
         let mut sender = MockSender::new();
         sender
             .expect_send()
             .once()
-            .returning(|| Err("Error sending".to_string()));
+            .returning(|_| Err("Error sending".to_string()));
 
         let mut repository = MockRepository::new();
         repository
             .expect_load()
             .once()
-            .return_once(|| Ok(Some(contacts)));
+            .return_once(|| Ok(Some(contacts())));
 
         let greeter = Greeter::new(Box::new(sender), Box::new(repository));
         let result = greeter.send_greetings();
