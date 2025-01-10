@@ -1,4 +1,4 @@
 What to experiment with katas?
-- [ ] Generics
-- [ ] Pattern matching
-- [ ] Lifetimes
+- [x] Generics: 10.1. Generic Data Types
+- [x] Pattern matching
+- [ ] Lifetimes: 10.3. Validating References with Lifetimes
