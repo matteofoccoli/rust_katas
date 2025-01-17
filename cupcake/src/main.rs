@@ -12,10 +12,6 @@ pub trait Pastry {
     fn price(&self) -> f32;
 }
 
-pub trait Topping {
-    fn new(pastry: Box<dyn Pastry>) -> impl Pastry;
-}
-
 pub struct Cupcake {}
 
 impl Cupcake {
@@ -52,7 +48,7 @@ impl Pastry for Cookie {
     }
 }
 
-struct Chocolate {
+pub struct Chocolate {
     pastry: Box<dyn Pastry>,
 }
 
@@ -78,13 +74,13 @@ impl Pastry for Chocolate {
     }
 }
 
-impl Topping for Chocolate {
-    fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
+impl Chocolate {
+    pub fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
         Chocolate { pastry }
     }
 }
 
-struct Nuts {
+pub struct Nuts {
     pastry: Box<dyn Pastry>,
 }
 
@@ -110,13 +106,13 @@ impl Pastry for Nuts {
     }
 }
 
-impl Topping for Nuts {
-    fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
+impl Nuts {
+    pub fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
         Nuts { pastry }
     }
 }
 
-struct Candies {
+pub struct Candies {
     pastry: Box<dyn Pastry>,
 }
 
@@ -142,8 +138,8 @@ impl Pastry for Candies {
     }
 }
 
-impl Topping for Candies {
-    fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
+impl Candies {
+    pub fn new(pastry: Box<dyn Pastry>) -> impl Pastry {
         Candies { pastry }
     }
 }
