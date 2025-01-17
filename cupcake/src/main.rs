@@ -1,11 +1,13 @@
-fn main() {
-    println!("Hello, world!");
-}
-
 pub trait Pastry {
-    fn description(&self) -> String;
+    fn description(&self) -> String {
+        self.symbol().to_string()
+    }
 
-    fn has_topping(&self) -> bool;
+    fn symbol(&self) -> char;
+
+    fn has_topping(&self) -> bool {
+        false
+    }
 
     fn price(&self) -> f32;
 }
@@ -23,12 +25,8 @@ impl Cupcake {
 }
 
 impl Pastry for Cupcake {
-    fn description(&self) -> String {
-        "🧁".to_string()
-    }
-
-    fn has_topping(&self) -> bool {
-        false
+    fn symbol(&self) -> char {
+        '🧁'
     }
 
     fn price(&self) -> f32 {
@@ -45,12 +43,8 @@ impl Cookie {
 }
 
 impl Pastry for Cookie {
-    fn description(&self) -> String {
-        "🍪".to_string()
-    }
-
-    fn has_topping(&self) -> bool {
-        false
+    fn symbol(&self) -> char {
+        '🍪'
     }
 
     fn price(&self) -> f32 {
@@ -65,10 +59,14 @@ struct Chocolate {
 impl Pastry for Chocolate {
     fn description(&self) -> String {
         if self.pastry.has_topping() {
-            format!("{} and 🍫", self.pastry.description())
+            format!("{} and {}", self.pastry.description(), self.symbol())
         } else {
-            format!("{} with 🍫", self.pastry.description())
+            format!("{} with {}", self.pastry.description(), self.symbol())
         }
+    }
+
+    fn symbol(&self) -> char {
+        '🍫'
     }
 
     fn has_topping(&self) -> bool {
@@ -93,10 +91,14 @@ struct Nuts {
 impl Pastry for Nuts {
     fn description(&self) -> String {
         if self.pastry.has_topping() {
-            format!("{} and 🥜", self.pastry.description())
+            format!("{} and {}", self.pastry.description(), self.symbol())
         } else {
-            format!("{} with 🥜", self.pastry.description())
+            format!("{} with {}", self.pastry.description(), self.symbol())
         }
+    }
+
+    fn symbol(&self) -> char {
+        '🥜'
     }
 
     fn has_topping(&self) -> bool {
@@ -121,10 +123,14 @@ struct Candies {
 impl Pastry for Candies {
     fn description(&self) -> String {
         if self.pastry.has_topping() {
-            format!("{} and 🍬", self.pastry.description())
+            format!("{} and {}", self.pastry.description(), self.symbol())
         } else {
-            format!("{} with 🍬", self.pastry.description())
+            format!("{} with {}", self.pastry.description(), self.symbol())
         }
+    }
+
+    fn symbol(&self) -> char {
+        '🍬'
     }
 
     fn has_topping(&self) -> bool {
@@ -276,4 +282,8 @@ mod test {
             format!("{:.2}", bundle_of_bundles.price())
         );
     }
+}
+
+fn main() {
+    print!("Hello world");
 }
