@@ -77,47 +77,46 @@ mod tests {
 
     #[test]
     fn match_has_started() {
-        let first_player = Player {
-            name: "Pete".to_string(),
-        };
-        let second_player = Player {
-            name: "Boris".to_string(),
-        };
-        let current_match = Match::new(first_player, second_player);
+        let current_match = Match::new(create_first_player(), create_second_player());
 
-        let expected_score = Score::new(Points::Love, Points::Love);
-        assert_eq!(expected_score, current_match.score);
+        assert_eq!(Score::new(Points::Love, Points::Love), current_match.score);
     }
 
     #[test]
     fn fifteen_love() {
-        let first_player = Player {
-            name: "Pete".to_string(),
-        };
-        let second_player = Player {
-            name: "Boris".to_string(),
-        };
-        let mut current_match = Match::new(first_player, second_player);
+        let mut current_match = Match::new(create_first_player(), create_second_player());
 
         current_match.first_player_scores();
 
-        let expected_score = Score::new(Points::Fifteen, Points::Love);
-        assert_eq!(expected_score, current_match.score);
+        assert_eq!(
+            Score::new(Points::Fifteen, Points::Love),
+            current_match.score
+        );
     }
 
     #[test]
     fn love_fifteen() {
-        let first_player = Player {
-            name: "Pete".to_string(),
-        };
-        let second_player = Player {
-            name: "Boris".to_string(),
-        };
-        let mut current_match = Match::new(first_player, second_player);
+        let mut current_match = Match::new(create_first_player(), create_second_player());
 
         current_match.second_player_scores();
 
-        let expected_score = Score::new(Points::Love, Points::Fifteen);
-        assert_eq!(expected_score, current_match.score);
+        assert_eq!(
+            Score::new(Points::Love, Points::Fifteen),
+            current_match.score
+        );
+    }
+
+    fn create_second_player() -> Player {
+        let second_player = Player {
+            name: "Boris".to_string(),
+        };
+        second_player
+    }
+
+    fn create_first_player() -> Player {
+        let first_player = Player {
+            name: "Pete".to_string(),
+        };
+        first_player
     }
 }
