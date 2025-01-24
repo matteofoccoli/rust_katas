@@ -77,14 +77,14 @@ mod tests {
 
     #[test]
     fn match_has_started() {
-        let current_match = Match::new(create_first_player(), create_second_player());
+        let current_match = create_match();
 
         assert_eq!(Score::new(Points::Love, Points::Love), current_match.score);
     }
 
     #[test]
     fn fifteen_love() {
-        let mut current_match = Match::new(create_first_player(), create_second_player());
+        let mut current_match = create_match();
 
         current_match.first_player_scores();
 
@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn love_fifteen() {
-        let mut current_match = Match::new(create_first_player(), create_second_player());
+        let mut current_match = create_match();
 
         current_match.second_player_scores();
 
@@ -106,17 +106,19 @@ mod tests {
         );
     }
 
+    fn create_match() -> Match {
+        Match::new(create_first_player(), create_second_player())
+    }
+
     fn create_second_player() -> Player {
-        let second_player = Player {
+        Player {
             name: "Boris".to_string(),
-        };
-        second_player
+        }
     }
 
     fn create_first_player() -> Player {
-        let first_player = Player {
+        Player {
             name: "Pete".to_string(),
-        };
-        first_player
+        }
     }
 }
