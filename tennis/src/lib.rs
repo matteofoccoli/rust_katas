@@ -106,6 +106,19 @@ mod tests {
         );
     }
 
+    #[test]
+    fn fifteen_fifteen() {
+        let mut current_match = create_match();
+
+        current_match.first_player_scores();
+        current_match.second_player_scores();
+
+        assert_eq!(
+            Score::new(Points::Fifteen, Points::Fifteen),
+            current_match.score
+        );
+    }
+
     fn create_match() -> Match {
         Match::new(create_first_player(), create_second_player())
     }
