@@ -6,29 +6,43 @@ impl Scoreboard {
     }
 }
 
-pub struct Match {}
+pub struct Match {
+    pub first_player: Player,
+    pub second_player: Player,
+    pub score: Score,
+}
 
 impl Match {
-    pub fn score(&self) -> Score {
-        return Score {
-            first_player: Player {
-                name: "Pete".to_string(),
-            },
-            first_player_score: Points::Zero,
-            second_player: Player {
-                name: "Boris".to_string(),
-            },
-            second_player_score: Points::Zero,
-        };
+    pub fn new(first_player: Player, second_player: Player) -> Self {
+        Self {
+            first_player,
+            second_player,
+            score: Score::new(Points::Love, Points::Love),
+        }
+    }
+
+    pub fn first_player_scores(&mut self) {
+        self.score = Score::new(Points::Fifteen, Points::Love)
+    }
+
+    pub fn second_player_scores(&mut self) {
+        self.score = Score::new(Points::Love, Points::Fifteen)
     }
 }
 
 #[derive(PartialEq, Debug)]
 pub struct Score {
-    pub first_player: Player,
-    pub first_player_score: Points,
-    pub second_player: Player,
-    pub second_player_score: Points,
+    pub first_player_points: Points,
+    pub second_player_points: Points,
+}
+
+impl Score {
+    pub fn new(first_player_points: Points, second_player_points: Points) -> Self {
+        Score {
+            first_player_points,
+            second_player_points,
+        }
+    }
 }
 
 #[derive(PartialEq, Debug)]
@@ -36,9 +50,18 @@ pub struct Player {
     pub name: String,
 }
 
+impl Clone for Player {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+        }
+    }
+}
+
 #[derive(PartialEq, Debug)]
 pub enum Points {
-    Zero,
+    Love,
+    Fifteen,
 }
 #[cfg(test)]
 mod tests {
@@ -54,18 +77,47 @@ mod tests {
 
     #[test]
     fn match_has_started() {
-        let current_match = Match {};
-
-        let expected_score = Score {
-            first_player: Player {
-                name: "Pete".to_string(),
-            },
-            first_player_score: Points::Zero,
-            second_player: Player {
-                name: "Boris".to_string(),
-            },
-            second_player_score: Points::Zero,
+        let first_player = Player {
+            name: "Pete".to_string(),
         };
-        assert_eq!(expected_score, current_match.score());
+        let second_player = Player {
+            name: "Boris".to_string(),
+        };
+        let current_match = Match::new(first_player, second_player);
+
+        let expected_score = Score::new(Points::Love, Points::Love);
+        assert_eq!(expected_score, current_match.score);
+    }
+
+    #[test]
+    fn fifteen_love() {
+        let first_player = Player {
+            name: "Pete".to_string(),
+        };
+        let second_player = Player {
+            name: "Boris".to_string(),
+        };
+        let mut current_match = Match::new(first_player, second_player);
+
+        current_match.first_player_scores();
+
+        let expected_score = Score::new(Points::Fifteen, Points::Love);
+        assert_eq!(expected_score, current_match.score);
+    }
+
+    #[test]
+    fn love_fifteen() {
+        let first_player = Player {
+            name: "Pete".to_string(),
+        };
+        let second_player = Player {
+            name: "Boris".to_string(),
+        };
+        let mut current_match = Match::new(first_player, second_player);
+
+        current_match.second_player_scores();
+
+        let expected_score = Score::new(Points::Love, Points::Fifteen);
+        assert_eq!(expected_score, current_match.score);
     }
 }
