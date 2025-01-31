@@ -1,137 +1,93 @@
-pub struct Scoreboard {}
-
-impl Scoreboard {
-    pub fn display(&self) -> String {
-        "Player A: 0, Player B: 0".to_string()
-    }
-}
-
-pub struct Match {
-    pub first_player: Player,
-    pub second_player: Player,
-    pub score: Score,
-}
-
-impl Match {
-    pub fn new(first_player: Player, second_player: Player) -> Self {
-        Self {
-            first_player,
-            second_player,
-            score: Score::new(Points::Love, Points::Love),
-        }
-    }
-
-    pub fn first_player_scores(&mut self) {
-        self.score = Score::new(Points::Fifteen, Points::Love)
-    }
-
-    pub fn second_player_scores(&mut self) {
-        self.score = Score::new(Points::Love, Points::Fifteen)
-    }
-}
-
 #[derive(PartialEq, Debug)]
 pub struct Score {
-    pub first_player_points: Points,
-    pub second_player_points: Points,
+    player_1_points: Points,
+    player_2_points: Points,
 }
 
 impl Score {
-    pub fn new(first_player_points: Points, second_player_points: Points) -> Self {
-        Score {
-            first_player_points,
-            second_player_points,
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct Player {
-    pub name: String,
-}
-
-impl Clone for Player {
-    fn clone(&self) -> Self {
+    fn new(player_1_points: Points, player_2_points: Points) -> Self {
         Self {
-            name: self.name.clone(),
+            player_1_points,
+            player_2_points,
+        }
+    }
+
+    fn next_for(&self, scorer: Scorer) -> Score {
+        match scorer {
+            Scorer::Player1 => {
+                if self.player_2_points <= Points::Forty && self.player_1_points < Points::Forty {
+                    Score::new(self.player_1_points.next(), self.player_2_points.clone())
+                } else {
+                    todo!()
+                }
+            }
+            Scorer::Player2 => Score::new(Points::Love, Points::Fifteen),
         }
     }
 }
 
-#[derive(PartialEq, Debug)]
+pub enum Scorer {
+    Player1,
+    Player2,
+}
+
+#[derive(PartialEq, Debug, PartialOrd, Clone)]
 pub enum Points {
     Love,
     Fifteen,
+    Thirty,
+    Forty,
+    Adv,
+    Deuce,
+    Game,
 }
+
+impl Points {
+    fn next(&self) -> Points {
+        match self {
+            Points::Love => Points::Fifteen,
+            Points::Fifteen => Points::Thirty,
+            Points::Thirty => Points::Forty,
+            Points::Forty => Points::Adv,
+            Points::Adv => Points::Game,
+            Points::Deuce => Points::Adv,
+            Points::Game => Points::Game,
+        }
+    }
+}
+
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
 
     #[test]
-    fn scoreboard_displays_initial_score() {
-        let scoreboard = Scoreboard {};
-
-        let expected_result = "Player A: 0, Player B: 0";
-        assert_eq!(expected_result, scoreboard.display());
-    }
-
-    #[test]
-    fn match_has_started() {
-        let current_match = create_match();
-
-        assert_eq!(Score::new(Points::Love, Points::Love), current_match.score);
-    }
-
-    #[test]
-    fn fifteen_love() {
-        let mut current_match = create_match();
-
-        current_match.first_player_scores();
+    fn new_score_is_15_0() {
+        let score = Score::new(Points::Love, Points::Love);
 
         assert_eq!(
             Score::new(Points::Fifteen, Points::Love),
-            current_match.score
-        );
+            score.next_for(Scorer::Player1)
+        )
     }
 
     #[test]
-    fn love_fifteen() {
-        let mut current_match = create_match();
-
-        current_match.second_player_scores();
+    fn new_score_is_0_15() {
+        let score = Score::new(Points::Love, Points::Love);
 
         assert_eq!(
             Score::new(Points::Love, Points::Fifteen),
-            current_match.score
-        );
+            score.next_for(Scorer::Player2)
+        )
     }
 
     #[test]
-    fn fifteen_fifteen() {
-        let mut current_match = create_match();
-
-        current_match.first_player_scores();
-        current_match.second_player_scores();
+    fn new_score_is_30_0() {
+        let mut score = Score::new(Points::Love, Points::Love);
+        score = score.next_for(Scorer::Player1);
 
         assert_eq!(
-            Score::new(Points::Fifteen, Points::Fifteen),
-            current_match.score
-        );
-    }
-
-    fn create_match() -> Match {
-        Match::new(create_first_player(), create_second_player())
-    }
-
-    fn create_second_player() -> Player {
-        Player {
-            name: "Boris".to_string(),
-        }
-    }
-
-    fn create_first_player() -> Player {
-        Player {
-            name: "Pete".to_string(),
-        }
+            Score::new(Points::Thirty, Points::Love),
+            score.next_for(Scorer::Player1)
+        )
     }
 }
