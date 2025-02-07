@@ -1,0 +1,1 @@
+My attempt at [bank ocr](https://codingdojo.org/kata/BankOCR/)
