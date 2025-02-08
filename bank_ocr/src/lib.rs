@@ -37,19 +37,25 @@ impl Parser {
 fn parse_account_number_line(
     buffer: [[char; ACCOUNT_NUMBER_COLUMNS]; ACCOUNT_NUMBER_ROWS],
 ) -> AccountNumber {
-    let mut digit_buffer = [[' '; DIGIT_COLUMNS]; DIGIT_ROWS];
     let mut digits = [0; 9];
     for offset in (0..ACCOUNT_NUMBER_COLUMNS).step_by(DIGIT_COLUMNS) {
-        for row in 0..DIGIT_ROWS {
-            for column in offset..offset + DIGIT_COLUMNS {
-                digit_buffer[row][column - offset] = buffer[row][column];
-            }
-        }
-        let number = into_digit(digit_buffer);
-        digits[offset / 3] = number;
+        digits[offset / 3] = parse_single_digit(buffer, offset);
     }
     println!("Numbers is {:?}", digits);
     AccountNumber { digits }
+}
+
+fn parse_single_digit(
+    buffer: [[char; ACCOUNT_NUMBER_COLUMNS]; ACCOUNT_NUMBER_ROWS],
+    offset: usize,
+) -> u8 {
+    let mut digit_buffer = [[' '; DIGIT_COLUMNS]; DIGIT_ROWS];
+    for row in 0..DIGIT_ROWS {
+        for column in offset..offset + DIGIT_COLUMNS {
+            digit_buffer[row][column - offset] = buffer[row][column];
+        }
+    }
+    into_digit(digit_buffer)
 }
 
 fn into_digit(buffer: [[char; 3]; 3]) -> u8 {
