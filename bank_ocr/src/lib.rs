@@ -2,32 +2,32 @@ use std::fs::read_to_string;
 
 pub struct Parser {}
 
-const ACCOUNT_NUMBER_BUFFER_COLUMNS: usize = 27;
-const ACCOUNT_NUMBER_BUFFER_ROWS: usize = 3;
-const ACCOUNT_NUMBER_BUFFER_MAX_ROWS: usize = 4;
-const NUMBER_BUFFER_COLUMNS: usize = 3;
-const NUMBER_BUFFER_ROWS: usize = 3;
+const ACCOUNT_NUMBER_COLUMNS: usize = 27;
+const ACCOUNT_NUMBER_ROWS: usize = 3;
+const ACCOUNT_NUMBER_EMPTY_ROW_INDEX: usize = 4;
+const DIGIT_COLUMNS: usize = 3;
+const DIGIT_ROWS: usize = 3;
 
 #[derive(PartialEq, Debug)]
 pub struct AccountNumber {
-    numbers: [u8; 9],
+    digits: [u8; 9],
 }
 
 impl Parser {
     pub fn parse(&self, file_path: String) -> Vec<AccountNumber> {
         let file_content = read_to_string(file_path).unwrap();
-        let mut line_buffer = [[' '; ACCOUNT_NUMBER_BUFFER_COLUMNS]; ACCOUNT_NUMBER_BUFFER_ROWS];
-        let mut buffer_line_index;
+
+        let mut line_buffer = [[' '; ACCOUNT_NUMBER_COLUMNS]; ACCOUNT_NUMBER_ROWS];
         let mut account_numbers: Vec<AccountNumber> = vec![];
 
         for (line_index, line) in file_content.lines().into_iter().enumerate() {
-            buffer_line_index = line_index % ACCOUNT_NUMBER_BUFFER_MAX_ROWS;
-            if buffer_line_index == ACCOUNT_NUMBER_BUFFER_ROWS {
+            let buffer_line_index = line_index % ACCOUNT_NUMBER_EMPTY_ROW_INDEX;
+            if buffer_line_index == ACCOUNT_NUMBER_ROWS {
                 account_numbers.push(parse_account_number_line(line_buffer.clone()));
-                break;
-            }
-            for (current_char_index, current_char) in line.chars().into_iter().enumerate() {
-                line_buffer[buffer_line_index][current_char_index] = current_char;
+            } else {
+                for (current_char_index, current_char) in line.chars().into_iter().enumerate() {
+                    line_buffer[buffer_line_index][current_char_index] = current_char;
+                }
             }
         }
         account_numbers
@@ -35,28 +35,36 @@ impl Parser {
 }
 
 fn parse_account_number_line(
-    line_buffer: [[char; ACCOUNT_NUMBER_BUFFER_COLUMNS]; ACCOUNT_NUMBER_BUFFER_ROWS],
+    buffer: [[char; ACCOUNT_NUMBER_COLUMNS]; ACCOUNT_NUMBER_ROWS],
 ) -> AccountNumber {
-    let mut number_buffer = [[' '; NUMBER_BUFFER_COLUMNS]; NUMBER_BUFFER_ROWS];
-    let mut numbers = [9; 9];
-    for offset in (0..ACCOUNT_NUMBER_BUFFER_COLUMNS).step_by(NUMBER_BUFFER_COLUMNS) {
-        for row in 0..NUMBER_BUFFER_ROWS {
-            for column in offset..offset + NUMBER_BUFFER_COLUMNS {
-                number_buffer[row][column - offset] = line_buffer[row][column];
+    let mut digit_buffer = [[' '; DIGIT_COLUMNS]; DIGIT_ROWS];
+    let mut digits = [0; 9];
+    for offset in (0..ACCOUNT_NUMBER_COLUMNS).step_by(DIGIT_COLUMNS) {
+        for row in 0..DIGIT_ROWS {
+            for column in offset..offset + DIGIT_COLUMNS {
+                digit_buffer[row][column - offset] = buffer[row][column];
             }
         }
-        let number = convert(number_buffer);
-        numbers[offset / 3] = number;
+        let number = into_digit(digit_buffer);
+        digits[offset / 3] = number;
     }
-    println!("Numbers is {:?}", numbers);
-    AccountNumber { numbers }
+    println!("Numbers is {:?}", digits);
+    AccountNumber { digits }
 }
 
-fn convert(buffer: [[char; 3]; 3]) -> u8 {
+fn into_digit(buffer: [[char; 3]; 3]) -> u8 {
     match buffer {
         [[' ', '_', ' '], ['|', ' ', '|'], ['|', '_', '|']] => 0,
         [[' ', ' ', ' '], [' ', ' ', '|'], [' ', ' ', '|']] => 1,
-        _ => todo!(),
+        [[' ', '_', ' '], [' ', '_', '|'], ['|', '_', ' ']] => 2,
+        [[' ', '_', ' '], [' ', '_', '|'], [' ', '_', '|']] => 3,
+        [[' ', ' ', ' '], ['|', '_', '|'], [' ', ' ', '|']] => 4,
+        [[' ', '_', ' '], ['|', '_', ' '], [' ', '_', '|']] => 5,
+        [[' ', '_', ' '], ['|', '_', ' '], ['|', '_', '|']] => 6,
+        [[' ', '_', ' '], [' ', ' ', '|'], [' ', ' ', '|']] => 7,
+        [[' ', '_', ' '], ['|', '_', '|'], ['|', '_', '|']] => 8,
+        [[' ', '_', ' '], ['|', '_', '|'], [' ', '_', '|']] => 9,
+        _ => panic!("{:?} is not a number", buffer),
     }
 }
 
@@ -68,17 +76,64 @@ mod tests {
     fn one_account_number_of_zeros() {
         let parser = Parser {};
 
-        let result = parser.parse("./all_0s_account_number.txt".to_string());
+        let result = parser.parse("./fixtures/single_account_number_with_0s.txt".to_string());
 
-        assert_eq!(vec!(AccountNumber { numbers: [0; 9] }), result);
+        assert_eq!(vec!(AccountNumber { digits: [0; 9] }), result);
     }
 
     #[test]
-    fn one_account_number_of_ones() {
+    fn one_account_number() {
         let parser = Parser {};
 
-        let result = parser.parse("./all_1s_account_number.txt".to_string());
+        let result = parser.parse("./fixtures/single_account_number.txt".to_string());
 
-        assert_eq!(vec!(AccountNumber { numbers: [1; 9] }), result);
+        assert_eq!(
+            vec!(AccountNumber {
+                digits: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+            }),
+            result
+        );
+    }
+
+    #[test]
+    fn two_account_numbers() {
+        let parser = Parser {};
+
+        let result = parser.parse("./fixtures/two_account_numbers.txt".to_string());
+
+        assert_eq!(
+            vec!(
+                AccountNumber {
+                    digits: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                },
+                AccountNumber {
+                    digits: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                }
+            ),
+            result
+        );
+    }
+
+    #[test]
+    fn four_account_numbers() {
+        let parser = Parser {};
+
+        let result = parser.parse("./fixtures/four_account_numbers.txt".to_string());
+
+        assert_eq!(
+            vec!(
+                AccountNumber {
+                    digits: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                },
+                AccountNumber {
+                    digits: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                },
+                AccountNumber { digits: [4; 9] },
+                AccountNumber {
+                    digits: [8, 9, 8, 9, 8, 9, 8, 9, 8]
+                }
+            ),
+            result
+        );
     }
 }
