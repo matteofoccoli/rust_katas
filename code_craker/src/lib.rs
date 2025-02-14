@@ -1,24 +1,38 @@
 pub struct CodeCracker;
 
+const ALPHABET: [char; 26] = [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+    't', 'u', 'v', 'w', 'x', 'y', 'z',
+];
+
+const ENCRYPTED_ALPHABET: [char; 26] = [
+    '!', ')', '"', '(', '£', '*', '%', '&', '>', '<', '@', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+    'i', 'j', 'k', 'l', 'm', 'n', 'o',
+];
+
 impl CodeCracker {
-    pub fn encrypt(&self, value: &str) -> String {
-        let decrypted = [
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
-            'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-        ];
-        let encrypted = [
-            '!', ')', '"', '(', '£', '*', '%', '&', '>', '<', '@', 'a', 'b', 'c', 'd', 'e', 'f',
-            'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        ];
-        let mut result = String::new();
-        for char in value.chars() {
-            let position = decrypted.into_iter().position(|x| x == char);
-            match position {
-                Some(position) => result.push(encrypted[position]),
-                None => result.push(char),
+    pub fn encode(&self, message: &str) -> String {
+        let mut encoded_message = String::new();
+        for char in message.chars() {
+            let index = ALPHABET.into_iter().position(|x| x == char);
+            match index {
+                Some(position) => encoded_message.push(ENCRYPTED_ALPHABET[position]),
+                None => encoded_message.push(char),
             }
         }
-        result
+        encoded_message
+    }
+
+    pub fn decode(&self, message: &str) -> String {
+        let mut decoded_message = String::new();
+        for char in message.chars() {
+            let index = ENCRYPTED_ALPHABET.into_iter().position(|x| x == char);
+            match index {
+                Some(position) => decoded_message.push(ALPHABET[position]),
+                None => decoded_message.push(char),
+            }
+        }
+        decoded_message
     }
 }
 
@@ -27,20 +41,44 @@ mod tests {
     use super::*;
 
     #[test]
-    fn encrypts_one_char() {
+    fn encodes_all_chars() {
         let code_cracker = CodeCracker {};
 
-        let result = code_cracker.encrypt("a");
+        let result = code_cracker.encode("a b c d e f g h i j k l m n o p q r s t u v w x y z");
 
-        assert_eq!("!", result);
+        assert_eq!(
+            "! ) \" ( £ * % & > < @ a b c d e f g h i j k l m n o",
+            result
+        );
     }
 
     #[test]
-    fn encrypts_two_chars() {
+    fn encodes_a_message() {
         let code_cracker = CodeCracker {};
 
-        let result = code_cracker.encrypt("ab");
+        let result = code_cracker.encode("Matteo@Prima 1234");
 
-        assert_eq!("!)", result);
+        assert_eq!("M!ii£d@Pg>b! 1234", result);
+    }
+
+    #[test]
+    fn decodes_all_chars() {
+        let code_cracker = CodeCracker {};
+
+        let result = code_cracker.decode("! ) \" ( £ * % & > < @ a b c d e f g h i j k l m n o");
+
+        assert_eq!(
+            "a b c d e f g h i j k l m n o p q r s t u v w x y z",
+            result
+        );
+    }
+
+    #[test]
+    fn decodes_a_message() {
+        let code_cracker = CodeCracker {};
+
+        let result = code_cracker.decode("M!ii£d@Pg>b! 1234");
+
+        assert_eq!("Matteo@Prima 1234", result);
     }
 }
