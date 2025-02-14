@@ -1,0 +1,1 @@
+My attemt at [code craker](https://codingdojo.org/kata/CodeCracker/) kata
