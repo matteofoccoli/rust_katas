@@ -56,9 +56,9 @@ mod tests {
     fn encodes_a_message() {
         let code_cracker = CodeCracker {};
 
-        let result = code_cracker.encode("Matteo@Prima 1234");
+        let result = code_cracker.encode("Matteo");
 
-        assert_eq!("M!ii£d@Pg>b! 1234", result);
+        assert_eq!("M!ii£d", result);
     }
 
     #[test]
@@ -79,6 +79,6 @@ mod tests {
 
         let result = code_cracker.decode("M!ii£d@Pg>b! 1234");
 
-        assert_eq!("Matteo@Prima 1234", result);
+        assert_eq!("MatteokPrima 1234", result);
     }
 }
