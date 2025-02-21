@@ -1,0 +1,1 @@
+My solution of the (Diamond kata)[https://codingdojo.org/kata/Diamond/]
