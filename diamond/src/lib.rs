@@ -18,7 +18,6 @@ impl Diamond {
         {
             index += 1;
         }
-        println!("Index of {} is {}", self.letter, index);
         index
     }
 
