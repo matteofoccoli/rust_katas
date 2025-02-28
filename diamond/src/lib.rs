@@ -35,8 +35,8 @@ impl Diamond {
         }
 
         // Calculate diamond size
-        let columns = letter_index + 2;
         let rows = ((letter_index + 1) * 2) - 1;
+        let columns = rows;
         let mut buffer: Vec<String> = vec![];
 
         println!("Diamond has {rows} rows and {columns} columns");
@@ -90,16 +90,30 @@ impl Diamond {
         println!("Buffer content is '{:?}'", buffer);
 
         for i in 0..letter_index + 1 {
-            println!("Appending line {} containing {} to result", i, buffer[i]);
+            println!(
+                "Appending line {} containing {} to result",
+                i + 1,
+                buffer[i]
+            );
             result.push_str(buffer[i].as_str());
             result.push('\n');
         }
 
         for i in (letter_index + 1)..rows - 1 {
-            println!("Appending line {} containing to result", i);
-            let distance = i - (letter_index + 1);
-            println!("Distance: {distance}");
+            let distance = i - letter_index;
+            println!(
+                "Appending line {} containing {} to result",
+                i + 1,
+                buffer[letter_index - distance]
+            );
+            result.push_str(buffer[letter_index - distance].as_str());
+            result.push('\n');
         }
+
+        println!(
+            "Final: Appending line {} containing {} to result",
+            rows, buffer[0]
+        );
 
         result.push_str(buffer[0].as_str());
 
@@ -129,6 +143,21 @@ mod tests {
         let expected_result = r#" A 
 B B
  A "#;
+
+        assert_eq!(expected_result, result);
+    }
+
+    #[test]
+    fn c_diamond() {
+        let diamond = Diamond::new('c');
+
+        let result = diamond.create();
+
+        let expected_result = r#"  A  
+ B B 
+C   C
+ B B 
+  A  "#;
 
         assert_eq!(expected_result, result);
     }
