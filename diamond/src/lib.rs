@@ -12,28 +12,52 @@ impl Diamond {
     }
 
     pub fn create(&self) -> String {
+        println!("************************");
+        println!(
+            "Creating a diamonf for {}",
+            self.letter.to_ascii_uppercase()
+        );
+
+        let mut result = String::new();
         let mut letter_index = 0;
 
+        // Find letter index
         while letter_index < self.alphabet.len()
             && self.letter.to_ascii_uppercase() != self.alphabet[letter_index]
         {
             letter_index += 1;
         }
-        println!("Position of {} is {}", self.letter, letter_index);
+        println!("Index of {} is {}", self.letter, letter_index);
 
-        let mut rows = letter_index + 1;
-        let mut columns = letter_index + 2;
+        if letter_index == 0 {
+            result.push(self.letter.to_ascii_uppercase());
+            return result;
+        }
+
+        // Calculate diamond size
+        let columns = letter_index + 2;
+        let rows = ((letter_index + 1) * 2) - 1;
+        let mut buffer: Vec<String> = vec![];
+
+        println!("Diamond has {rows} rows and {columns} columns");
 
         let mut initial_spaces = 0;
         let mut middle_spaces = 0;
         let mut ending_spaces = 0;
 
-        println!("Diamond width is {columns}");
-        for row in 0..rows {
+        for row in 0..letter_index + 1 {
             println!("************************");
-            let mut buffer = "".to_string();
+
+            let mut row_buffer = "".to_string();
             let current_letter = self.alphabet[row];
-            println!("Elaborating line {} with {}", row, current_letter);
+
+            println!("Processing row {} with {}", row, current_letter);
+
+            for _ in 0..letter_index - row {
+                row_buffer.push(' ');
+            }
+
+            row_buffer.push(current_letter);
 
             initial_spaces = letter_index - row;
             ending_spaces = initial_spaces;
@@ -47,11 +71,39 @@ impl Diamond {
             println!("Will have {middle_spaces} middle spaces");
             println!("Will have {ending_spaces} ending spaces");
 
-            for column in 0..columns {}
+            for _ in 0..middle_spaces {
+                row_buffer.push(' ');
+            }
 
-            println!("Buffer is '{buffer}'");
+            if row != 0 {
+                row_buffer.push(current_letter);
+            }
+
+            for _ in 0..ending_spaces {
+                row_buffer.push(' ');
+            }
+
+            println!("Row buffer is '{row_buffer}'");
+            buffer.push(row_buffer);
         }
-        "A".to_string()
+
+        println!("Buffer content is '{:?}'", buffer);
+
+        for i in 0..letter_index + 1 {
+            println!("Appending line {} containing {} to result", i, buffer[i]);
+            result.push_str(buffer[i].as_str());
+            result.push('\n');
+        }
+
+        for i in (letter_index + 1)..rows - 1 {
+            println!("Appending line {} containing to result", i);
+            let distance = i - (letter_index + 1);
+            println!("Distance: {distance}");
+        }
+
+        result.push_str(buffer[0].as_str());
+
+        result
     }
 }
 
@@ -76,7 +128,7 @@ mod tests {
 
         let expected_result = r#" A 
 B B
- A"#;
+ A "#;
 
         assert_eq!(expected_result, result);
     }
